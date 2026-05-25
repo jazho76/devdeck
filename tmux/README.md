@@ -2,10 +2,12 @@
 
 Standalone Tmux configuration.
 
-Install TPM
+Install it from the repository root:
 
-```
-git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
+```bash
+./scripts/install-tmux.sh
 ```
 
-Open Tmux and press Ctr+A I to install all plugins.
+The installer links `tmux/` into `~/.config/tmux` and installs or updates TPM at `~/.local/share/tmux/plugins/tpm`.
+
+Open tmux and press `Ctrl+A I` to install all plugins.

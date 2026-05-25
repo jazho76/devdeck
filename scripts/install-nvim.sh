@@ -5,70 +5,80 @@ NVIM_VERSION="0.12.2"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-NVIM_CONFIG_DIR="$REPO_DIR/nvim"
-
+NVIM_CONFIG_SOURCE="$REPO_DIR/nvim"
+NVIM_CONFIG_TARGET="$HOME/.config/nvim"
 NVIM_ARCHIVE="nvim-linux-x86_64.tar.gz"
 NVIM_URL="https://github.com/neovim/neovim/releases/download/v${NVIM_VERSION}/${NVIM_ARCHIVE}"
 
-TARGETS=(
-  "$HOME/.local/nvim"
-  "$HOME/.local/bin/nvim"
-  "$HOME/.config/nvim"
+RESET_TARGETS=(
   "$HOME/.local/share/nvim"
   "$HOME/.local/state/nvim"
   "$HOME/.cache/nvim"
 )
 
-if [ ! -f "$NVIM_CONFIG_DIR/init.lua" ]; then
-  echo "Neovim config not found: $NVIM_CONFIG_DIR"
-  exit 1
-fi
+reset_existing_state() {
+  local existing_targets=()
+  local target
+  local answer
 
-existing_targets=()
-for target in "${TARGETS[@]}"; do
-  if [ -e "$target" ] || [ -L "$target" ]; then
-    existing_targets+=("$target")
+  for target in "${RESET_TARGETS[@]}"; do
+    if [ -e "$target" ] || [ -L "$target" ]; then
+      existing_targets+=("$target")
+    fi
+  done
+
+  if [ "${#existing_targets[@]}" -eq 0 ]; then
+    return
   fi
-done
 
-echo "Installing Neovim ${NVIM_VERSION}"
-echo "Config source: ${NVIM_CONFIG_DIR}"
-
-if [ "${#existing_targets[@]}" -gt 0 ]; then
   echo
-  echo "The following paths already exist and will be deleted:"
+  echo "The following Neovim data paths already exist:"
   for target in "${existing_targets[@]}"; do
     echo "  ${target}"
   done
   echo
-  read -r -p "Continue? [y/N] " answer
+  read -r -p "Delete them and start with clean Neovim state? [y/N] " answer
 
   case "$answer" in
     y|Y|yes|YES)
+      rm -rf "${existing_targets[@]}"
       ;;
     *)
-      echo "Aborted."
-      exit 1
+      echo "Keeping existing Neovim state."
       ;;
   esac
+}
+
+if [ ! -f "$NVIM_CONFIG_SOURCE/init.lua" ]; then
+  echo "Neovim config not found: $NVIM_CONFIG_SOURCE"
+  exit 1
 fi
+
+if [ -e "$NVIM_CONFIG_TARGET" ] && [ ! -L "$NVIM_CONFIG_TARGET" ]; then
+  echo "Refusing to overwrite existing path: $NVIM_CONFIG_TARGET"
+  echo "Move it aside and run this script again."
+  exit 1
+fi
+
+echo "Installing Neovim ${NVIM_VERSION}"
+echo "Config source: ${NVIM_CONFIG_SOURCE}"
+
+reset_existing_state
 
 rm -rf "$HOME/.local/nvim"
 rm -f "$HOME/.local/bin/nvim"
-rm -rf "$HOME/.config/nvim"
-rm -rf "$HOME/.local/share/nvim"
-rm -rf "$HOME/.local/state/nvim"
-rm -rf "$HOME/.cache/nvim"
 
 mkdir -p "$HOME/.local" "$HOME/.local/bin" "$HOME/.config"
 
-curl -L "$NVIM_URL" -o "$NVIM_ARCHIVE"
-tar xzf "$NVIM_ARCHIVE"
-rm "$NVIM_ARCHIVE"
+work_dir="$(mktemp -d)"
+trap 'rm -rf "$work_dir"' EXIT
 
-mv nvim-linux-x86_64 "$HOME/.local/nvim"
+curl -L "$NVIM_URL" -o "$work_dir/$NVIM_ARCHIVE"
+tar xzf "$work_dir/$NVIM_ARCHIVE" -C "$work_dir"
+
+mv "$work_dir/nvim-linux-x86_64" "$HOME/.local/nvim"
 ln -sfn "$HOME/.local/nvim/bin/nvim" "$HOME/.local/bin/nvim"
-ln -sfn "$NVIM_CONFIG_DIR" "$HOME/.config/nvim"
+ln -sfn "$NVIM_CONFIG_SOURCE" "$NVIM_CONFIG_TARGET"
 
 echo
 echo 'Make sure ~/.local/bin is on your PATH:'
