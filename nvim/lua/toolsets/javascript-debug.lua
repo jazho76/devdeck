@@ -9,7 +9,7 @@ local js_based_languages = {
   'javascriptreact',
 }
 
-local js_debug_path = vim.fn.stdpath('data') .. '/lazy/vscode-js-debug/src/dapDebugServer.js'
+local js_debug_adapter = vim.fn.stdpath('data') .. '/mason/bin/js-debug-adapter'
 
 local dap_adapters = {}
 for _, adapter in ipairs({ 'pwa-node', 'pwa-chrome', 'pwa-msedge', 'node-terminal' }) do
@@ -18,8 +18,8 @@ for _, adapter in ipairs({ 'pwa-node', 'pwa-chrome', 'pwa-msedge', 'node-termina
     host = 'localhost',
     port = '${port}',
     executable = {
-      command = 'node',
-      args = { js_debug_path, '${port}' },
+      command = js_debug_adapter,
+      args = { '${port}' },
     },
   }
 end
@@ -55,6 +55,9 @@ for _, language in ipairs(js_based_languages) do
 end
 
 return {
+  mason = {
+    'js-debug-adapter',
+  },
   dap_adapters = dap_adapters,
   dap_configurations = dap_configurations,
 }
