@@ -48,6 +48,10 @@ jobs:
       - name: Run installer scripts
         run: |
           export HOME="$PWD/.ci/home"
+          export XDG_CONFIG_HOME="$HOME/.config"
+          export XDG_DATA_HOME="$HOME/.local/share"
+          export XDG_STATE_HOME="$HOME/.local/state"
+          export XDG_CACHE_HOME="$HOME/.cache"
           export PATH="$HOME/.local/bin:$PATH"
 
           ./scripts/install-tmux.sh
@@ -56,6 +60,10 @@ jobs:
       - name: Smoke Neovim startup
         run: |
           export HOME="$PWD/.ci/home"
+          export XDG_CONFIG_HOME="$HOME/.config"
+          export XDG_DATA_HOME="$HOME/.local/share"
+          export XDG_STATE_HOME="$HOME/.local/state"
+          export XDG_CACHE_HOME="$HOME/.cache"
           export PATH="$HOME/.local/bin:$PATH"
 
           nvim_bin="$(command -v nvim || true)"
@@ -63,5 +71,5 @@ jobs:
             nvim_bin="$HOME/.local/bin/nvim"
           fi
 
-          test -d "$HOME/.local/share/nvim/lazy/telescope.nvim"
+          test -d "$XDG_DATA_HOME/nvim/lazy/telescope.nvim"
           "$nvim_bin" --headless "+lua require('telescope')" "+qa"
