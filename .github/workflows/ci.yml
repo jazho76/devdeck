@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check shell syntax
+        run: bash -n scripts/*.sh
+
+  headless-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bootstrap dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cargo \
+            curl \
+            fd-find \
+            g++ \
+            gcc \
+            git \
+            gzip \
+            make \
+            nodejs \
+            npm \
+            pkg-config \
+            python3 \
+            python3-pip \
+            ripgrep \
+            rustc \
+            tar \
+            tmux \
+            tree-sitter-cli \
+            unzip
+
+      - name: Run installer scripts
+        run: |
+          export HOME="$PWD/.ci/home"
+          export XDG_CONFIG_HOME="$HOME/.config"
+          export XDG_DATA_HOME="$HOME/.local/share"
+          export XDG_STATE_HOME="$HOME/.local/state"
+          export XDG_CACHE_HOME="$HOME/.cache"
+          export PATH="$HOME/.local/bin:$PATH"
+
+          ./scripts/install-tmux.sh
+          ./scripts/install-nvim.sh
+
+      - name: Smoke Neovim startup
+        run: |
+          export HOME="$PWD/.ci/home"
+          export XDG_CONFIG_HOME="$HOME/.config"
+          export XDG_DATA_HOME="$HOME/.local/share"
+          export XDG_STATE_HOME="$HOME/.local/state"
+          export XDG_CACHE_HOME="$HOME/.cache"
+          export PATH="$HOME/.local/bin:$PATH"
+
+          nvim_bin="$(command -v nvim || true)"
+          if [ -z "$nvim_bin" ]; then
+            nvim_bin="$HOME/.local/bin/nvim"
+          fi
+
+          test -d "$XDG_DATA_HOME/nvim/lazy/telescope.nvim"
+          "$nvim_bin" --headless "+lua require('telescope')" "+qa"
