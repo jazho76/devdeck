@@ -41,17 +41,9 @@ cd ~/.devdeck
 ./scripts/install-font.sh
 ```
 
-`install-nvim.sh` installs the Neovim tarball only when no `nvim` binary is available. If another Neovim is already installed, it leaves it untouched and warns when the version differs from the expected version.
-
-`install-tmux.sh` requires tmux to be installed by your system package manager. It never installs or replaces the tmux binary.
-
-`install-font.sh` installs DroidSansM Nerd Font into `~/.local/share/fonts/devdeck` and refreshes the font cache. Select `DroidSansM Nerd Font` in your terminal profile after installing it.
-
 ## Uninstall
 
 ```bash
 ./scripts/uninstall-nvim.sh
 ./scripts/uninstall-tmux.sh
 ```
-
-Uninstall scripts remove only Devdeck-managed symlinks, Devdeck's Neovim tarball install, and tmux plugin files. They do not remove system Neovim/tmux packages or Neovim runtime state.
