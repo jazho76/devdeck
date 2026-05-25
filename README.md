@@ -36,14 +36,11 @@ sudo dnf install -y \
 ```bash
 git clone https://github.com/jazho76/devdeck.git ~/.devdeck
 cd ~/.devdeck
-./scripts/install-nvim.sh
-./scripts/install-tmux.sh
-./scripts/install-font.sh
+./scripts/install.sh
 ```
 
 ## Uninstall
 
 ```bash
-./scripts/uninstall-nvim.sh
-./scripts/uninstall-tmux.sh
+./scripts/uninstall.sh
 ```
