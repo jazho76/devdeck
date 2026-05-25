@@ -1,83 +1,21 @@
 # Neovim Configuration
 
-Standalone Neovim configuration.
+Devdeck Neovim configuration.
 
-## Uninstall previous version
-
-```bash
-rm -rf ~/.local/nvim
-rm -f ~/.local/bin/nvim
-```
-
-## Remove previous data and cache
+Install it from the repository root:
 
 ```bash
-rm -rf ~/.local/share/nvim
-rm -rf ~/.cache/nvim
-rm -rf ~/.config/nvim
+./scripts/install-nvim.sh
 ```
 
-## Install Nvim
+The installer links `nvim/` into `~/.config/nvim`. If no `nvim` binary is available, it installs the Neovim tarball under `~/.local/devdeck/nvim` and links `~/.local/bin/nvim` to it.
+
+If another Neovim is already installed, the installer leaves it untouched and prints a warning when the version differs from the expected version.
+
+Uninstall Devdeck-managed Neovim files:
 
 ```bash
-VERSION=0.12.2
-curl -L https://github.com/neovim/neovim/releases/download/v$VERSION/nvim-linux-x86_64.tar.gz -o nvim-linux-x86_64.tar.gz
-tar xzvf nvim-linux-x86_64.tar.gz
-rm ./nvim-linux-x86_64.tar.gz
-mkdir -p ~/.local ~/.local/bin ~/.config
-rm -rf ~/.local/nvim
-mv ./nvim-linux-x86_64 ~/.local/nvim
-ln -sfn ~/.local/nvim/bin/nvim ~/.local/bin/nvim
+./scripts/uninstall-nvim.sh
 ```
 
-Make sure `~/.local/bin` is on your `PATH`:
-
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-## Install dependencies
-
-Install Fedora host packages:
-
-Core:
-
-```bash
-sudo dnf install git curl tar gzip unzip gcc gcc-c++ make ripgrep fd-find wl-clipboard fontconfig tree-sitter-cli
-```
-
-Language packs:
-
-```bash
-sudo dnf install nodejs npm python3 python3-pip cargo rust openssl-devel pkgconf-pkg-config go dotnet-sdk-10.0
-```
-
-Install a Nerd Font for icons:
-
-```bash
-NERD_FONT_VERSION=3.4.0
-curl -L https://github.com/ryanoasis/nerd-fonts/releases/download/v$NERD_FONT_VERSION/DroidSansMono.zip -o DroidSansMono.zip
-unzip DroidSansMono.zip -d DroidSansMono/
-mkdir -p ~/.local/share/fonts/
-cp ./DroidSansMono/*.otf ~/.local/share/fonts/
-rm -rf ./DroidSansMono
-rm ./DroidSansMono.zip
-fc-cache -fv
-fc-list | rg 'DroidSansM'
-```
-
-Then configure your terminal to use `DroidSansM Nerd Font`.
-
-## Install configuration
-
-Clone directly to the Neovim config directory:
-
-```bash
-git clone https://github.com/jazho76/nvim.git ~/.config/nvim
-```
-
-Open Neovim and let Lazy install plugins:
-
-```bash
-nvim
-```
+The uninstaller removes only the Devdeck-managed Neovim tarball install and symlinks. It does not remove system Neovim packages or Neovim runtime state.
