@@ -38,4 +38,12 @@ git clone https://github.com/jazho76/devdeck.git ~/.devdeck
 cd ~/.devdeck
 ./scripts/install-nvim.sh
 ./scripts/install-tmux.sh
+./scripts/install-font.sh
+```
+
+## Uninstall
+
+```bash
+./scripts/uninstall-nvim.sh
+./scripts/uninstall-tmux.sh
 ```
