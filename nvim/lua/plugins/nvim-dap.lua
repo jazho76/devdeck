@@ -14,12 +14,12 @@ return {
         dap.set_breakpoint(vim.fn.input('Breakpoint condition: '))
       end, { desc = '[D]ebug Toggle [B]reakpoint With Condition' })
 
-      local language_packs = require('config.language-packs')
-      for name, adapter in pairs(language_packs.dap_adapters) do
+      local toolsets = require('config.toolset-registry')
+      for name, adapter in pairs(toolsets.dap_adapters) do
         dap.adapters[name] = adapter
       end
 
-      for language, configurations in pairs(language_packs.dap_configurations) do
+      for language, configurations in pairs(toolsets.dap_configurations) do
         dap.configurations[language] = configurations
       end
     end
@@ -52,7 +52,7 @@ return {
     -- JS debugger
     'microsoft/vscode-js-debug',
     enabled = function()
-      return require('config.language-packs').has_language('web')
+      return require('config.toolset-registry').has_toolset('web')
     end,
     build = table.concat({
       'curl -fL https://github.com/microsoft/vscode-js-debug/releases/download/v1.117.0/js-debug-dap-v1.117.0.tar.gz -o js-debug-dap.tar.gz',

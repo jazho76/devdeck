@@ -32,7 +32,7 @@ return {
     end,
     notify_on_error = false,
     notify_no_formatters = false,
-    formatters_by_ft = require('config.language-packs').formatters_by_ft,
+    formatters_by_ft = require('config.toolset-registry').formatters_by_ft,
     formatters = {
       prettier = {
         prepend_args = function(_, ctx)

@@ -59,7 +59,7 @@ return {
 
     require('mason').setup()
 
-    local language_packs = require('config.language-packs')
+    local toolsets = require('config.toolset-registry')
     local servers = vim.tbl_deep_extend('force', {
       lua_ls = {
         settings = {
@@ -70,7 +70,7 @@ return {
           },
         },
       },
-    }, language_packs.lsp)
+    }, toolsets.lsp)
 
     local capabilities = vim.lsp.protocol.make_client_capabilities()
     capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
@@ -92,7 +92,7 @@ return {
     end
 
     require('mason-tool-installer').setup({
-      ensure_installed = language_packs.mason,
+      ensure_installed = toolsets.mason,
       run_on_start = true,
     })
   end,

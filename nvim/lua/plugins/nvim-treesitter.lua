@@ -1,4 +1,4 @@
-local parsers = require('config.language-packs').treesitter
+local parsers = require('config.toolset-registry').treesitter
 
 local function start_treesitter()
   local bufnr = vim.api.nvim_get_current_buf()

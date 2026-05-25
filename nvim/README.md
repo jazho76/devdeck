@@ -46,7 +46,7 @@ Core:
 sudo dnf install git curl tar gzip unzip gcc gcc-c++ make ripgrep fd-find wl-clipboard fontconfig tree-sitter-cli
 ```
 
-Language packs:
+Toolsets:
 
 ```bash
 sudo dnf install nodejs npm python3 python3-pip cargo rust openssl-devel pkgconf-pkg-config go dotnet-sdk-10.0
