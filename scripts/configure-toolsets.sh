@@ -23,8 +23,6 @@ if [ ! -d "$TOOLSETS_DIR" ]; then
   exit 1
 fi
 
-# Available toolsets (the universe) — discovered from the toolsets/ modules so there
-# is no hardcoded list to keep in sync.
 mapfile -t available < <(
   find "$TOOLSETS_DIR" -maxdepth 1 -type f -name '*.lua' -printf '%f\n' \
     | sed 's/\.lua$//' \
@@ -36,26 +34,40 @@ if [ "${#available[@]}" -eq 0 ]; then
   exit 1
 fi
 
-# Extract the quoted toolset names from a Lua list file. Only ever runs against the
-# committed default and this script's own generated output.
+# Naive grep parse is fine: only ever reads the committed default or our own output.
 read_list() {
   [ -f "$1" ] || return 0
   grep -oE "'[^']+'" "$1" | tr -d "'"
 }
 
-# Show the current selection (override if present, else committed default) in the header.
 seed_file="$DEFAULT_FILE"
 [ -f "$LOCAL_FILE" ] && seed_file="$LOCAL_FILE"
+
+declare -A enabled=()
+while IFS= read -r name; do
+  [ -n "$name" ] && enabled["$name"]=1
+done < <(read_list "$seed_file")
+
 current="$(read_list "$seed_file" | paste -sd, -)"
+
+# fzf can't pre-mark items, so pre-select the enabled toolsets via the start event:
+# pos(N) jumps to the Nth item, toggle marks it. --sync ensures the list is loaded first.
+start_bind=''
+for i in "${!available[@]}"; do
+  [ -n "${enabled[${available[$i]}]+x}" ] && start_bind+="pos($((i + 1)))+toggle+"
+done
+start_bind+='pos(1)'
 
 set +e
 selected="$(
   printf '%s\n' "${available[@]}" | fzf \
     --multi \
+    --sync \
     --reverse \
     --height='~100%' \
     --prompt='enable > ' \
     --header=$'Tab toggle · Ctrl-A all · Ctrl-D none · Enter save · Esc cancel\nEnabled now: '"${current:-(none)}" \
+    --bind "start:${start_bind}" \
     --bind 'ctrl-a:select-all' \
     --bind 'ctrl-d:deselect-all'
 )"
@@ -67,7 +79,6 @@ if [ "$status" -ne 0 ]; then
   exit 0
 fi
 
-# Build a set from the selection, then emit in stable `available` order.
 declare -A want=()
 while IFS= read -r name; do
   [ -n "$name" ] && want["$name"]=1
