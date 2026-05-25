@@ -48,16 +48,4 @@ return {
       vim.keymap.set('n', '<leader>du', require 'dapui'.toggle, { desc = '[D]ebug Toggle [U]I' })
     end
   },
-  {
-    -- JS debugger
-    'microsoft/vscode-js-debug',
-    enabled = function()
-      return require('config.toolset-registry').has_toolset('javascript-debug')
-    end,
-    build = table.concat({
-      'curl -fL https://github.com/microsoft/vscode-js-debug/releases/download/v1.117.0/js-debug-dap-v1.117.0.tar.gz -o js-debug-dap.tar.gz',
-      'tar xzf js-debug-dap.tar.gz --strip-components=1',
-      'rm js-debug-dap.tar.gz',
-    }, ' && '),
-  },
 }
