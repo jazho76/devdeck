@@ -40,4 +40,4 @@ else
   echo "No Devdeck Neovim install found: $NVIM_INSTALL_DIR"
 fi
 
-echo "Kept Neovim runtime state under ~/.local/share/nvim, ~/.local/state/nvim, and ~/.cache/nvim."
+echo "Kept Neovim runtime state under ~/.local/share/nvim ~/.local/state/nvim ~/.cache/nvim"
