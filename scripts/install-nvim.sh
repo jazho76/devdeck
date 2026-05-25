@@ -10,8 +10,6 @@ NVIM_CONFIG_TARGET="$HOME/.config/nvim"
 DEVDECK_DIR="$HOME/.local/devdeck"
 NVIM_INSTALL_DIR="$DEVDECK_DIR/nvim"
 NVIM_BIN_TARGET="$HOME/.local/bin/nvim"
-NVIM_ARCHIVE="nvim-linux-x86_64.tar.gz"
-NVIM_URL="https://github.com/neovim/neovim/releases/download/v${NVIM_VERSION}/${NVIM_ARCHIVE}"
 WORK_DIR=""
 
 cleanup() {
@@ -21,6 +19,15 @@ cleanup() {
 }
 
 trap cleanup EXIT
+
+require_command() {
+  local command_name="$1"
+
+  if ! command -v "$command_name" >/dev/null 2>&1; then
+    echo "Missing required command: $command_name"
+    exit 1
+  fi
+}
 
 get_nvim_version() {
   local nvim_bin="$1"
@@ -39,16 +46,34 @@ link_nvim_config() {
 }
 
 install_nvim_tarball() {
+  local arch archive url
+
+  case "$(uname -m)" in
+    x86_64)        arch="x86_64" ;;
+    aarch64|arm64) arch="arm64" ;;
+    *)
+      echo "Unsupported architecture: $(uname -m)" >&2
+      echo "Devdeck installs Neovim tarballs for x86_64 and arm64 only." >&2
+      exit 1
+      ;;
+  esac
+
+  archive="nvim-linux-${arch}.tar.gz"
+  url="https://github.com/neovim/neovim/releases/download/v${NVIM_VERSION}/${archive}"
+
   WORK_DIR="$(mktemp -d)"
 
-  curl -L "$NVIM_URL" -o "$WORK_DIR/$NVIM_ARCHIVE"
-  tar xzf "$WORK_DIR/$NVIM_ARCHIVE" -C "$WORK_DIR"
+  curl -L "$url" -o "$WORK_DIR/$archive"
+  tar xzf "$WORK_DIR/$archive" -C "$WORK_DIR"
 
   rm -rf "$NVIM_INSTALL_DIR"
   mkdir -p "$DEVDECK_DIR" "$HOME/.local/bin"
-  mv "$WORK_DIR/nvim-linux-x86_64" "$NVIM_INSTALL_DIR"
+  mv "$WORK_DIR/${archive%.tar.gz}" "$NVIM_INSTALL_DIR"
   ln -sfn "$NVIM_INSTALL_DIR/bin/nvim" "$NVIM_BIN_TARGET"
 }
+
+require_command curl
+require_command tar
 
 if [ ! -f "$NVIM_CONFIG_SOURCE/init.lua" ]; then
   echo "Neovim config not found: $NVIM_CONFIG_SOURCE"

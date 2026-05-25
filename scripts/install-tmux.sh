@@ -11,9 +11,20 @@ TMUX_DATA_DIR="$HOME/.local/share/tmux"
 TPM_DIR="$TMUX_DATA_DIR/plugins/tpm"
 TPM_URL="https://github.com/tmux-plugins/tpm"
 
+require_command() {
+  local command_name="$1"
+
+  if ! command -v "$command_name" >/dev/null 2>&1; then
+    echo "Missing required command: $command_name"
+    exit 1
+  fi
+}
+
 get_tmux_version() {
   tmux -V | sed -E 's/^tmux //'
 }
+
+require_command git
 
 if [ ! -f "$TMUX_CONFIG_SOURCE/tmux.conf" ]; then
   echo "Tmux config not found: $TMUX_CONFIG_SOURCE"
