@@ -1,11 +1,18 @@
 return {
-  'docs',
+  'markdown',
   'config',
+
   'python',
-  'web',
+  'javascript',
+  'typescript',
+  'react',
+  'web-markup',
+  'eslint',
+  'graphql',
+
   'asm',
   'go',
   'rust',
   'csharp',
-  'c',
+  'c_cpp',
 }

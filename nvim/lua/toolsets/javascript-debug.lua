@@ -55,32 +55,6 @@ for _, language in ipairs(js_based_languages) do
 end
 
 return {
-  lsp = {
-    ts_ls = {},
-    html = { filetypes = { 'html', 'twig', 'hbs' } },
-    angularls = {},
-    cssls = {},
-    eslint = {},
-  },
-  mason = {
-    'prettier',
-  },
-  formatters_by_ft = {
-    javascript = { 'prettier' },
-    javascriptreact = { 'prettier' },
-    typescript = { 'prettier' },
-    typescriptreact = { 'prettier' },
-    css = { 'prettier' },
-    scss = { 'prettier' },
-    html = { 'prettier' },
-    graphql = { 'prettier' },
-  },
   dap_adapters = dap_adapters,
   dap_configurations = dap_configurations,
-  treesitter = {
-    'tsx',
-    'javascript',
-    'typescript',
-    'graphql',
-  },
 }
