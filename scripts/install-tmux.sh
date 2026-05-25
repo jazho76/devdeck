@@ -59,5 +59,7 @@ else
   git clone "$TPM_URL" "$TPM_DIR"
 fi
 
+"$TPM_DIR/bin/install_plugins"
+
 echo "TPM ready: $TPM_DIR"
-echo "Done. Start tmux and press prefix + I to install plugins."
+echo "Done. Start tmux with: tmux"

@@ -80,6 +80,8 @@ mv "$work_dir/nvim-linux-x86_64" "$HOME/.local/nvim"
 ln -sfn "$HOME/.local/nvim/bin/nvim" "$HOME/.local/bin/nvim"
 ln -sfn "$NVIM_CONFIG_SOURCE" "$NVIM_CONFIG_TARGET"
 
+"$HOME/.local/bin/nvim" --headless "+Lazy! install" "+qa"
+
 echo
 echo 'Make sure ~/.local/bin is on your PATH:'
 echo 'export PATH="$HOME/.local/bin:$PATH"'
