@@ -12,6 +12,15 @@ NVIM_INSTALL_DIR="$DEVDECK_DIR/nvim"
 NVIM_BIN_TARGET="$HOME/.local/bin/nvim"
 NVIM_ARCHIVE="nvim-linux-x86_64.tar.gz"
 NVIM_URL="https://github.com/neovim/neovim/releases/download/v${NVIM_VERSION}/${NVIM_ARCHIVE}"
+WORK_DIR=""
+
+cleanup() {
+  if [ -n "$WORK_DIR" ]; then
+    rm -rf "$WORK_DIR"
+  fi
+}
+
+trap cleanup EXIT
 
 get_nvim_version() {
   local nvim_bin="$1"
@@ -30,17 +39,14 @@ link_nvim_config() {
 }
 
 install_nvim_tarball() {
-  local work_dir
+  WORK_DIR="$(mktemp -d)"
 
-  work_dir="$(mktemp -d)"
-  trap 'rm -rf "$work_dir"' EXIT
-
-  curl -L "$NVIM_URL" -o "$work_dir/$NVIM_ARCHIVE"
-  tar xzf "$work_dir/$NVIM_ARCHIVE" -C "$work_dir"
+  curl -L "$NVIM_URL" -o "$WORK_DIR/$NVIM_ARCHIVE"
+  tar xzf "$WORK_DIR/$NVIM_ARCHIVE" -C "$WORK_DIR"
 
   rm -rf "$NVIM_INSTALL_DIR"
   mkdir -p "$DEVDECK_DIR" "$HOME/.local/bin"
-  mv "$work_dir/nvim-linux-x86_64" "$NVIM_INSTALL_DIR"
+  mv "$WORK_DIR/nvim-linux-x86_64" "$NVIM_INSTALL_DIR"
   ln -sfn "$NVIM_INSTALL_DIR/bin/nvim" "$NVIM_BIN_TARGET"
 }
 
