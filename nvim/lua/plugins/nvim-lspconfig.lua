@@ -50,9 +50,7 @@ return {
       nmap('<leader>ss', require('telescope.builtin').lsp_document_symbols, '[S]earch Document [S]ymbols')
       nmap('<leader>sS', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[S]earch Workspace [S]ymbols')
       nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
-      nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
       nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
-
     end
 
     vim.o.winborder = 'rounded'

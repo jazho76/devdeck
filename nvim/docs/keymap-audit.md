@@ -12,25 +12,30 @@ documentation issues identified.
 
 Toolset modules (`lua/toolsets/*.lua`) contribute no keymaps. They only feed
 LSP servers, Mason packages, formatters, DAP adapters/configs, and treesitter
-parsers into the registry. All keymaps live in `lua/config/keymaps.lua` and the
-plugin files.
+parsers into the registry. Keymaps live in `lua/config/keymaps.lua`, the plugin
+files, and a handful of plugin defaults (Comment.nvim, nvim-surround) that ship
+mappings without any local configuration.
+
+Scope legend used throughout: **global** maps load at startup; **buffer-local**
+maps are created in an LSP/gitsigns `on_attach` and exist only in matching
+buffers (so they also only surface in which-key inside those buffers).
 
 ## 1. which-key group registry
 
 Defined in `lua/plugins/which-key.lua`.
 
-| Prefix             | Label           | Members                            | Notes                    |
-| ------------------ | --------------- | ---------------------------------- | ------------------------ |
-| `<leader>c`        | [C]ode          | `cr`, `ca`                         | LSP rename and action    |
-| `<leader>d`        | [D]ebug         | `db`, `dB`, `du`                   |                          |
-| `<leader>g`        | [G]it           | `gf`, `gc`, `gb`, `gs`, `gh`, `gg` | telescope-git + fugitive |
-| `<leader>h` (n, v) | Git [H]unk      | gitsigns set                       |                          |
-| `<leader>l`        | [L]SP           | `lr`                               | group of one             |
-| `<leader>n`        | [N]otifications | `nh`, `nd`                         |                          |
-| `<leader>s`        | [S]earch        | telescope + LSP symbols            |                          |
-| `<leader>t`        | [T]oggle        | `tf`, `tb`, `td`                   |                          |
-| `<leader>T`        | [T]ests         | `Tr`                               | group of one             |
-| `<leader>w`        | S[w]ap          | `wa`, `wf`, `wA`, `wF`             | all members lack `desc`  |
+| Prefix             | Label           | Members                            | Notes                                  |
+| ------------------ | --------------- | ---------------------------------- | -------------------------------------- |
+| `<leader>c`        | [C]ode          | `cr`, `ca`                         | LSP rename and action (buffer-local)   |
+| `<leader>d`        | [D]ebug         | `db`, `dB`, `du`                   |                                        |
+| `<leader>g`        | [G]it           | `gf`, `gc`, `gb`, `gs`, `gh`, `gg` | telescope-git + fugitive               |
+| `<leader>h` (n, v) | Git [H]unk      | gitsigns set (buffer-local)        |                                        |
+| `<leader>l`        | [L]SP           | `lr`                               | group of one (buffer-local)            |
+| `<leader>n`        | [N]otifications | `nh`, `nd`                         |                                        |
+| `<leader>s`        | [S]earch        | telescope + LSP symbols            | `ss`/`sS` are buffer-local             |
+| `<leader>t`        | [T]oggle        | `tf`, `tb`, `td`                   |                                        |
+| `<leader>T`        | [T]ests         | `Tr`                               | group of one                           |
+| `<leader>w`        | S[w]ap          | `wa`, `wf`, `wA`, `wF`             | all members lack `desc`                |
 
 ## 2. Leader maps
 
@@ -77,10 +82,12 @@ which-key can display.
 | `hd` | Diff against index       | yes  |
 | `hD` | Diff against last commit | yes  |
 
-Wording is inconsistent (for example "git stage hunk" in normal mode vs "stage
-git hunk" in visual mode for the same action).
+`hs` and `hr` exist in both normal and visual mode. Wording is inconsistent:
+visual mode uses "stage git hunk" / "reset git hunk", normal mode uses "git
+stage hunk" / "git reset hunk" for the same action, and `hS` / `hR` use
+mid-sentence capitals ("git Stage buffer", "git Reset buffer").
 
-### `<leader>l` [L]SP (`nvim-lspconfig.lua`)
+### `<leader>l` [L]SP (LSP, buffer-local, `nvim-lspconfig.lua`)
 
 | Key  | Action     | desc |
 | ---- | ---------- | ---- |
@@ -95,35 +102,38 @@ git hunk" in visual mode for the same action).
 
 ### `<leader>s` [S]earch (`telescope.lua`, LSP symbols in `nvim-lspconfig.lua`)
 
-| Key  | Action                   | desc                   |
-| ---- | ------------------------ | ---------------------- |
-| `s/` | Grep open files          | yes                    |
-| `st` | Telescope builtin picker | yes (typo: "Tlescope") |
-| `sf` | Find files               | yes                    |
-| `sh` | Help tags                | yes                    |
-| `sw` | Grep current word        | yes                    |
-| `sg` | Live grep                | yes                    |
-| `sG` | Live grep in git root    | yes                    |
-| `sd` | Diagnostics              | yes                    |
-| `sm` | Marks                    | yes                    |
-| `sr` | Resume                   | yes                    |
-| `sb` | Buffers                  | yes                    |
-| `ss` | LSP document symbols     | yes                    |
-| `sS` | LSP workspace symbols    | yes                    |
+| Key  | Action                   | desc                   | Scope        |
+| ---- | ------------------------ | ---------------------- | ------------ |
+| `s/` | Grep open files          | yes                    | global       |
+| `st` | Telescope builtin picker | yes (typo: "Tlescope") | global       |
+| `sf` | Find files               | yes                    | global       |
+| `sh` | Help tags                | yes                    | global       |
+| `sw` | Grep current word        | yes                    | global       |
+| `sg` | Live grep                | yes                    | global       |
+| `sG` | Live grep in git root    | yes                    | global       |
+| `sd` | Diagnostics              | yes                    | global       |
+| `sm` | Marks                    | yes                    | global       |
+| `sr` | Resume                   | yes                    | global       |
+| `sb` | Buffers                  | yes                    | global       |
+| `ss` | LSP document symbols     | yes                    | buffer-local |
+| `sS` | LSP workspace symbols    | yes                    | buffer-local |
 
 ### `<leader>t` [T]oggle (`gitsigns.lua`, `conform.lua`)
 
-| Key  | Action              | desc |
-| ---- | ------------------- | ---- |
-| `tf` | Toggle autoformat   | yes  |
-| `tb` | Toggle line blame   | yes  |
-| `td` | Toggle show deleted | yes  |
+| Key  | Action              | desc | Scope                  |
+| ---- | ------------------- | ---- | ---------------------- |
+| `tf` | Toggle autoformat   | yes  | global (`conform`)     |
+| `tb` | Toggle line blame   | yes  | buffer-local (gitsigns)|
+| `td` | Toggle show deleted | yes  | buffer-local (gitsigns)|
 
 ### `<leader>T` [T]ests (`nvim-test.lua`)
 
 | Key  | Action           | desc |
 | ---- | ---------------- | ---- |
 | `Tr` | Run nearest test | yes  |
+
+Only `:TestNearest` is mapped. `nvim-test` also exposes `:TestFile`,
+`:TestSuite`, `:TestLast`, and `:TestVisit`, none of which have keymaps.
 
 ### `<leader>w` S[w]ap (treesitter, `nvim-treesitter.lua`)
 
@@ -136,14 +146,14 @@ git hunk" in visual mode for the same action).
 
 ### Standalone leader leafs (no group)
 
-| Key       | Action                   | Source             | desc |
-| --------- | ------------------------ | ------------------ | ---- |
-| `e`       | Open floating diagnostic | keymaps.lua        | yes  |
-| `q`       | Diagnostics to loclist   | keymaps.lua        | yes  |
-| `?`       | Recent files             | telescope.lua      | yes  |
-| `<space>` | Buffers                  | telescope.lua      | yes  |
-| `/`       | Fuzzy find in buffer     | telescope.lua      | yes  |
-| `D`       | LSP type definition      | nvim-lspconfig.lua | yes  |
+| Key       | Action                   | Source             | Scope        | desc |
+| --------- | ------------------------ | ------------------ | ------------ | ---- |
+| `e`       | Open floating diagnostic | keymaps.lua        | global       | yes  |
+| `q`       | Diagnostics to loclist   | keymaps.lua        | global       | yes  |
+| `?`       | Recent files             | telescope.lua      | global       | yes  |
+| `<space>` | Buffers                  | telescope.lua      | global       | yes  |
+| `/`       | Fuzzy find in buffer     | telescope.lua      | global       | yes  |
+| `D`       | LSP type definition      | nvim-lspconfig.lua | buffer-local | yes  |
 
 ## 3. Non-leader maps
 
@@ -209,6 +219,9 @@ git hunk" in visual mode for the same action).
 | `<C-S>`             | Accept Copilot suggestion      | copilot.lua  |
 
 Telescope disables `<C-u>` and `<C-d>` in its insert mode (`telescope.lua`).
+Note that `<C-S>` and `<C-s>` are the same keycode to Neovim; copilot's accept
+therefore occupies the slot Neovim 0.11+ assigns by default to insert-mode
+signature help (`vim.lsp.buf.signature_help`). See finding 4.
 
 ### LSP goto (buffer-local, `nvim-lspconfig.lua`)
 
@@ -219,6 +232,44 @@ Telescope disables `<C-u>` and `<C-d>` in its insert mode (`telescope.lua`).
 | `gI` | Implementation | yes  |
 | `gD` | Declaration    | yes  |
 | `K`  | Hover          | yes  |
+
+`gd`, `gr`, and `gI` use telescope pickers; `gD` and `K` use the native
+`vim.lsp.buf.*` calls. There is no signature-help map (see finding 4).
+
+### Comment.nvim (plugin defaults, no `desc`)
+
+`Comment.nvim` is loaded with `opts = {}`, which enables its full default
+mapping set. None carry a `desc`, so they are invisible in which-key.
+
+| Key            | Mode | Action                       |
+| -------------- | ---- | ---------------------------- |
+| `gcc`          | n    | Toggle line comment          |
+| `gbc`          | n    | Toggle block comment         |
+| `gc{motion}`   | n    | Linewise comment operator    |
+| `gb{motion}`   | n    | Blockwise comment operator   |
+| `gc`           | x    | Comment selection (linewise) |
+| `gb`           | x    | Comment selection (blockwise)|
+| `gco`          | n    | Add comment line below       |
+| `gcO`          | n    | Add comment line above       |
+| `gcA`          | n    | Add comment at end of line   |
+
+### nvim-surround (plugin defaults, no `desc`)
+
+`nvim-surround` is loaded with `opts = {}`, enabling its default mappings. These
+override the native `ys`, `ds`, `cs`, and visual `S` behaviors.
+
+| Key            | Mode | Action                         |
+| -------------- | ---- | ------------------------------ |
+| `ys{motion}c`  | n    | Add surround                   |
+| `yss c`        | n    | Add surround to whole line     |
+| `yS{motion}c`  | n    | Add surround on new lines      |
+| `ds{char}`     | n    | Delete surround                |
+| `cs{char}c`    | n    | Change surround                |
+| `cS{char}c`    | n    | Change surround on new lines   |
+| `S{char}`      | x    | Surround selection             |
+| `gS{char}`     | x    | Surround selection, new lines  |
+| `<C-g>s`       | i    | Add surround                   |
+| `<C-g>S`       | i    | Add surround on new lines      |
 
 ### Treesitter textobjects and moves (`nvim-treesitter.lua`)
 
@@ -233,6 +284,9 @@ None of these carry a `desc`.
 - Repeatable motions: `;`, `,`, `f`, `F`, `t`, `T` (override native behavior with
   repeat-aware versions)
 
+Note: `ak`/`ik` both map to `@assignment.lhs` (inner and outer are identical),
+and `ar` duplicates `aa` (both `@parameter.outer`). Likely copy-paste leftovers.
+
 ### DAP function keys (`nvim-dap.lua`)
 
 | Key    | Action    | desc |
@@ -242,7 +296,7 @@ None of these carry a `desc`.
 | `<F7>` | Step into | no   |
 | `<F8>` | Step out  | no   |
 
-### Gitsigns navigation and text object (`gitsigns.lua`)
+### Gitsigns navigation and text object (`gitsigns.lua`, buffer-local)
 
 | Key         | Mode | Action             | desc |
 | ----------- | ---- | ------------------ | ---- |
@@ -253,68 +307,92 @@ None of these carry a `desc`.
 
 ### Conflicts
 
-1. RESOLVED (2026-05-26). `<C-k>` collision: tmux-navigator mapped `<C-k>` to
-   pane-up globally while LSP `on_attach` mapped it to signature help
-   buffer-locally, and the buffer-local map won, breaking upward pane navigation
-   on every code buffer. Fixed by removing the LSP signature-help binding;
-   `<C-k>` is now pane-up everywhere. Signature inspection remains via `K`
-   (hover) and the `lsp_signature.nvim` auto-popup.
-2. `gr` shadows Neovim defaults. Neovim 0.11+ ships `grn` (rename), `gra`
+1. `gr` shadows Neovim defaults. Neovim 0.11+ ships `grn` (rename), `gra`
    (action), `grr` (references), `gri` (implementation) under the `gr` prefix.
    Mapping `gr` directly makes it a complete mapping, so the `gr` prefix now
    waits for `timeoutlen` and the built-ins become awkward to reach. The custom
    `<leader>cr`, `<leader>ca`, `gd`, and `gI` also duplicate these built-ins.
+2. Plugin namespace overrides (intentional, documented here for completeness).
+   `nvim-surround` overrides native `ys`, `ds`, `cs`, `cS`, and visual `S`;
+   `Comment.nvim` claims the `gc*`/`gb*` operator namespace. These are expected
+   plugin behaviors, not bugs, but they occupy the `g`, `c`, `d`, and `y`
+   namespaces and constrain any future custom maps there.
 
 ### Overlaps and redundancy
 
 3. `<leader><space>` and `<leader>sb` both open the telescope buffer picker.
-4. Three diagnostic entry points: `<leader>e` (float), `<leader>q` (loclist),
+4. `K` (hover) duplicates the Neovim built-in `K`. Signature help is now
+   provided only by the `lsp_signature.nvim` auto-popup: Neovim's default
+   insert-mode `<C-s>` is shadowed by copilot's `<C-S>` accept (same keycode),
+   and there is no normal-mode signature-help map. Fine if the auto-popup is the
+   intended source; worth a manual normal-mode map otherwise.
+5. Three diagnostic entry points: `<leader>e` (float), `<leader>q` (loclist),
    `<leader>sd` (telescope).
-5. `K` (hover) duplicates the Neovim built-in `K`. Signature help is now covered
-   by the `lsp_signature.nvim` auto-popup and the built-in insert-mode `<C-s>`.
 
 ### Gaps (installed but no keymap)
 
 6. diffview.nvim: no keymaps. Reachable only via `:DiffviewOpen`. Natural fit
    under `<leader>g`.
-7. todo-comments.nvim: no jump maps (`]t` / `[t`) and no `:TodoTelescope` map.
-   Effectively passive.
+7. todo-comments.nvim: no jump maps (`]t` / `[t`) and no `:TodoTelescope` /
+   `:TodoQuickFix` map. Effectively passive.
 8. vim-dadbod-ui: reachable only via the alpha dashboard `d` button or `:DBUI`.
    No leader map.
-9. vim-obsession: command-only (likely acceptable).
-10. No visual-mode code action. `<leader>ca` is normal mode only. Range code
+9. nvim-test: only `<leader>Tr` (`:TestNearest`). `:TestFile`, `:TestSuite`,
+   `:TestLast`, and `:TestVisit` are unmapped, leaving the [T]ests group at one
+   member.
+10. conform.nvim: format-on-save plus `<leader>tf` toggle and a `:Format`
+    command, but no "format now" keymap. Minor.
+11. vim-obsession: command-only (likely acceptable).
+12. No visual-mode code action. `<leader>ca` is normal mode only. Range code
     actions are common.
 
 ### Documentation gaps (no `desc`, so invisible in which-key)
 
-11. `<leader>w` swap maps: the group exists but its four children are unlabeled.
-12. Treesitter textobjects and moves (about 40 maps): no `desc`. Mostly
+13. `<leader>w` swap maps: the group exists but its four children are unlabeled.
+14. Treesitter textobjects and moves (about 40 maps): no `desc`. Mostly
     operator/visual, but normal-mode moves such as `]f` and `]a` do surface.
-13. DAP `<F5>` through `<F8>`: no `desc`. Function keys do not show in which-key
+15. Comment.nvim and nvim-surround default maps: no `desc`. The `g`-prefixed
+    Comment maps (`gcc`, `gc`, `gb`, etc.) surface in the which-key `g` popup
+    unlabeled.
+16. DAP `<F5>` through `<F8>`: no `desc`. Function keys do not show in which-key
     regardless, but this is inconsistent with `<leader>d*`.
-14. Most non-leader editor, buffer, and window maps lack `desc`. Lower priority
+17. Most non-leader editor, buffer, and window maps lack `desc`. Lower priority
     since they are not leader-driven.
 
 ### Grouping problems
 
-15. LSP functionality is spread across five namespaces: rename and action in
+18. LSP functionality is spread across five namespaces: rename and action in
     [C]ode, restart in [L]SP, symbols in [S]earch, goto in bare `g*`, and type
     definition in standalone `<leader>D`. The [L]SP group then holds only `lr`.
-16. `<leader>D` (type definition) sits next to the lowercase `<leader>d` [D]ebug
+19. `<leader>D` (type definition) sits next to the lowercase `<leader>d` [D]ebug
     group. A case-only distinction adjacent to a group prefix is error-prone.
-17. Groups of one: [L]SP (`lr`) and [T]ests (`Tr`).
+20. Groups of one: [L]SP (`lr`) and [T]ests (`Tr`).
 
 ### Convention inconsistencies
 
-18. Mixed `desc` styles: telescope and LSP use bracket hints (for example
+21. Mixed `desc` styles: telescope and LSP use bracket hints (for example
     "[S]earch [F]iles"), gitsigns uses lowercase prose ("preview git hunk"), DAP
     uses a mixed form.
-19. `<leader>st` description typo: "Tlescope".
-20. Normal and visual hunk descriptions differ for the same conceptual action.
+22. `<leader>st` description typo: "Tlescope".
+23. Normal and visual hunk descriptions differ for the same conceptual action,
+    and `hS`/`hR` use mid-sentence capitals.
+
+### Likely copy-paste errors
+
+24. Treesitter `ak`/`ik` both map to `@assignment.lhs` (no distinct inner/outer),
+    and `ar` duplicates `aa` (`@parameter.outer`). The intended targets were
+    probably `@assignment.outer`/`@assignment.inner` and `@return`/regex.
 
 ## 5. Candidates to cut or consolidate
+
+These are proposals pending confirmation of actual usage — the call on what is
+unused is the user's.
 
 - `<leader>sb` (duplicate of `<leader><space>`).
 - `<leader>D` (move away from the debug-group prefix, or fold type definition
   under [C]ode or the goto cluster).
-- `gr`, `gd`, `gI`, `<leader>cr`, `<leader>ca` given the Neovim 0.11+ built-ins.
+- `gr`, `gd`, `gI`, `<leader>cr`, `<leader>ca` given the Neovim 0.11+ built-ins
+  (decision pending; depends on whether telescope pickers are preferred over the
+  native list handlers).
+- `K` hover (duplicate of the built-in; only worth keeping if the explicit map
+  is doing something the default does not).
