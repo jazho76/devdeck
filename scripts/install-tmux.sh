@@ -36,6 +36,12 @@ if ! command -v tmux >/dev/null 2>&1; then
   exit 1
 fi
 
+if [ -n "${TMUX:-}" ]; then
+  echo "This installer cannot run inside an existing tmux session."
+  echo "Exit tmux and run it again from a normal shell."
+  exit 1
+fi
+
 installed_version="$(get_tmux_version)"
 if [ "$installed_version" = "$EXPECTED_TMUX_VERSION" ]; then
   echo "Using tmux $installed_version: $(command -v tmux)"
