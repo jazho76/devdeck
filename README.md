@@ -54,6 +54,10 @@ cd ~/.devdeck
 ./scripts/install.sh
 ```
 
+## Notes
+
+- [Supply-chain notes](docs/supply-chain.md)
+
 ## Uninstall
 
 ```bash
