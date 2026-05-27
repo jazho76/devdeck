@@ -21,6 +21,6 @@ return {
       }
     }
 
-    vim.keymap.set('n', '<A-e>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
+    vim.keymap.set('n', '<A-e>', ':NvimTreeToggle<CR>', { noremap = true, silent = true, desc = 'Toggle the NvimTree file explorer' })
   end,
 }
