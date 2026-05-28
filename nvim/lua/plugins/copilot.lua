@@ -6,6 +6,7 @@ return {
       silent = true,
       expr = true,
       replace_keycodes = false,
+      desc = 'Accept the current Copilot inline suggestion',
     })
   end,
 }
