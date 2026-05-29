@@ -10,7 +10,17 @@ vim.keymap.set('n', '<A-a>', ':bprevious<CR>', { noremap = true, silent = true, 
 vim.keymap.set('n', '<A-d>', ':bnext<CR>', { noremap = true, silent = true, desc = 'Go to the next buffer' })
 vim.keymap.set('n', '<A-q>', ':bdelete<CR>', { noremap = true, silent = true, desc = 'Delete the current buffer' })
 vim.keymap.set('n', '<A-Q>', ':bdelete!<CR>', { silent = true, desc = 'Force-delete the current buffer' })
-vim.keymap.set('n', '<A-o>', ':%bd|e#|bd#<CR>', { noremap = true, silent = true, desc = 'Close all buffers except the current buffer' })
+vim.keymap.set('n', '<A-o>', function()
+  local current = vim.api.nvim_get_current_buf()
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if buf ~= current
+      and vim.bo[buf].buflisted
+      and vim.bo[buf].buftype == ''
+      and not vim.bo[buf].modified then
+      vim.api.nvim_buf_delete(buf, {})
+    end
+  end
+end, { noremap = true, silent = true, desc = 'Close all buffers except the current buffer' })
 
 -- Split resizing
 vim.keymap.set('n', '<C-Up>', ':resize +2<CR>', { noremap = true, silent = true, desc = 'Increase the current window height' })
