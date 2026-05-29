@@ -12,6 +12,10 @@ return {
     end
 
     vim.keymap.set('n', '<Leader>tf', toggle_autoformat, { desc = 'Toggle autoformat' })
+
+    vim.keymap.set({ 'n', 'x' }, '<Leader>cf', function()
+      require('conform').format({ async = true, lsp_format = 'fallback' })
+    end, { desc = 'Format buffer or selection' })
   end,
   opts = {
     default_format_opts = {

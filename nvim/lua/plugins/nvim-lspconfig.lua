@@ -32,16 +32,20 @@ return {
   },
   config = function()
     local on_attach = function(_, bufnr)
-      local nmap = function(keys, func, desc)
+      local nmap = function(keys, func, desc, mode)
         if desc then
           desc = 'LSP: ' .. desc
         end
 
-        vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
+        vim.keymap.set(mode or 'n', keys, func, { buffer = bufnr, desc = desc })
       end
 
       nmap('<leader>cr', vim.lsp.buf.rename, 'Rename symbol')
-      nmap('<leader>ca', vim.lsp.buf.code_action, 'Code action')
+      nmap('<leader>ca', vim.lsp.buf.code_action, 'Code action', { 'n', 'x' })
+      nmap('<leader>ci', function()
+        vim.lsp.buf.code_action({ context = { only = { 'source.organizeImports' } }, apply = true })
+      end, 'Organize imports')
+      nmap('<leader>cl', vim.lsp.codelens.run, 'Run CodeLens')
 
       nmap('<leader>lr', '<cmd>lsp restart<CR>', 'Restart server')
       nmap('<leader>li', '<cmd>checkhealth vim.lsp<CR>', 'Server info')
