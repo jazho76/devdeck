@@ -46,7 +46,7 @@ return {
       nmap('gd', require('telescope.builtin').lsp_definitions, 'Goto definition')
       nmap('gr', require('telescope.builtin').lsp_references, 'Goto references')
       nmap('gI', require('telescope.builtin').lsp_implementations, 'Goto implementation')
-      nmap('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type definition')
+      nmap('gy', require('telescope.builtin').lsp_type_definitions, 'Goto type definition')
       nmap('<leader>ss', require('telescope.builtin').lsp_document_symbols, 'Document symbols')
       nmap('<leader>sS', require('telescope.builtin').lsp_dynamic_workspace_symbols, 'Workspace symbols')
       nmap('K', vim.lsp.buf.hover, 'Hover documentation')
