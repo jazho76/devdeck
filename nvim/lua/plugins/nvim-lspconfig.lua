@@ -33,10 +33,6 @@ return {
   config = function()
     local on_attach = function(_, bufnr)
       local nmap = function(keys, func, desc, mode)
-        if desc then
-          desc = 'LSP: ' .. desc
-        end
-
         vim.keymap.set(mode or 'n', keys, func, { buffer = bufnr, desc = desc })
       end
 
