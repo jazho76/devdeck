@@ -42,8 +42,9 @@ jobs:
             rustc \
             tar \
             tmux \
-            tree-sitter-cli \
             unzip
+          sudo npm install -g tree-sitter-cli
+          tree-sitter --version
 
       - name: Run installer scripts
         run: |
@@ -55,6 +56,7 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
 
           ./scripts/install-tmux.sh
+          ./scripts/configure-toolsets.sh --toolsets markdown,config,c_cpp,javascript,typescript,react,web-markup,eslint,graphql
           ./scripts/install-nvim.sh
 
       - name: Smoke Neovim startup
