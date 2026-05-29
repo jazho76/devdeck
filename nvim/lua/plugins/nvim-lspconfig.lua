@@ -42,15 +42,22 @@ return {
 
       nmap('<leader>cr', vim.lsp.buf.rename, 'Rename symbol')
       nmap('<leader>ca', vim.lsp.buf.code_action, 'Code action')
-      nmap('<leader>lr', '<cmd>LspRestart<CR>', 'Restart server')
+
+      nmap('<leader>lr', '<cmd>lsp restart<CR>', 'Restart server')
+      nmap('<leader>li', '<cmd>checkhealth vim.lsp<CR>', 'Server info')
+      nmap('<leader>ld', function()
+        vim.diagnostic.enable(not vim.diagnostic.is_enabled())
+      end, 'Toggle diagnostics')
+
       nmap('gd', require('telescope.builtin').lsp_definitions, 'Goto definition')
       nmap('gr', require('telescope.builtin').lsp_references, 'Goto references')
       nmap('gI', require('telescope.builtin').lsp_implementations, 'Goto implementation')
       nmap('gy', require('telescope.builtin').lsp_type_definitions, 'Goto type definition')
+      nmap('gD', vim.lsp.buf.declaration, 'Goto declaration')
+
       nmap('<leader>ss', require('telescope.builtin').lsp_document_symbols, 'Document symbols')
       nmap('<leader>sS', require('telescope.builtin').lsp_dynamic_workspace_symbols, 'Workspace symbols')
       nmap('K', vim.lsp.buf.hover, 'Hover documentation')
-      nmap('gD', vim.lsp.buf.declaration, 'Goto declaration')
     end
 
     vim.o.winborder = 'rounded'
