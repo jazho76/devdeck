@@ -40,17 +40,17 @@ return {
         vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
       end
 
-      nmap('<leader>cr', vim.lsp.buf.rename, '[C]ode [R]ename')
-      nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
-      nmap('<leader>lr', '<cmd>LspRestart<CR>', '[R]estart')
-      nmap('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-      nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-      nmap('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
-      nmap('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
-      nmap('<leader>ss', require('telescope.builtin').lsp_document_symbols, '[S]earch Document [S]ymbols')
-      nmap('<leader>sS', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[S]earch Workspace [S]ymbols')
-      nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
-      nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+      nmap('<leader>cr', vim.lsp.buf.rename, 'Rename symbol')
+      nmap('<leader>ca', vim.lsp.buf.code_action, 'Code action')
+      nmap('<leader>lr', '<cmd>LspRestart<CR>', 'Restart server')
+      nmap('gd', require('telescope.builtin').lsp_definitions, 'Goto definition')
+      nmap('gr', require('telescope.builtin').lsp_references, 'Goto references')
+      nmap('gI', require('telescope.builtin').lsp_implementations, 'Goto implementation')
+      nmap('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type definition')
+      nmap('<leader>ss', require('telescope.builtin').lsp_document_symbols, 'Document symbols')
+      nmap('<leader>sS', require('telescope.builtin').lsp_dynamic_workspace_symbols, 'Workspace symbols')
+      nmap('K', vim.lsp.buf.hover, 'Hover documentation')
+      nmap('gD', vim.lsp.buf.declaration, 'Goto declaration')
     end
 
     vim.o.winborder = 'rounded'

@@ -5,10 +5,10 @@ return {
 
     vim.keymap.set('n', '<leader>nh', function()
       require('notify')._print_history()
-    end, { desc = '[N]otifications [H]istory' })
+    end, { desc = 'Show notification history' })
 
     vim.keymap.set('n', '<leader>nd', function()
       require('notify').dismiss({})
-    end, { desc = '[N]otifications [D]ismiss All' })
+    end, { desc = 'Dismiss all notifications' })
   end
 }

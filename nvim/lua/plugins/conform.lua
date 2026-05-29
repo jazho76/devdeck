@@ -11,7 +11,7 @@ return {
       vim.notify('Autoformatting is ' .. status, vim.log.levels.INFO, { title = 'Toggle Autoformat' })
     end
 
-    vim.keymap.set('n', '<Leader>tf', toggle_autoformat, { desc = '[T]oggle Auto[f]ormat' })
+    vim.keymap.set('n', '<Leader>tf', toggle_autoformat, { desc = 'Toggle autoformat' })
   end,
   opts = {
     default_format_opts = {
