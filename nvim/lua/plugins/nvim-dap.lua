@@ -4,11 +4,17 @@ return {
     config = function()
       local dap = require('dap')
 
-      -- Set keymaps to control the debugger
-      vim.keymap.set('n', '<F5>', dap.continue)
-      vim.keymap.set('n', '<F6>', dap.step_over)
-      vim.keymap.set('n', '<F7>', dap.step_into)
-      vim.keymap.set('n', '<F8>', dap.step_out)
+      -- Set keymaps to control the debugger.
+      -- Stepping is bound to both <leader>d... (discoverable) and the F-keys
+      -- (single-press, for fast stepping during an active session).
+      vim.keymap.set('n', '<leader>dc', dap.continue, { desc = 'Continue' })
+      vim.keymap.set('n', '<leader>dn', dap.step_over, { desc = 'Step over' })
+      vim.keymap.set('n', '<leader>di', dap.step_into, { desc = 'Step into' })
+      vim.keymap.set('n', '<leader>do', dap.step_out, { desc = 'Step out' })
+      vim.keymap.set('n', '<F5>', dap.continue, { desc = 'Debug: continue' })
+      vim.keymap.set('n', '<F6>', dap.step_over, { desc = 'Debug: step over' })
+      vim.keymap.set('n', '<F7>', dap.step_into, { desc = 'Debug: step into' })
+      vim.keymap.set('n', '<F8>', dap.step_out, { desc = 'Debug: step out' })
       vim.keymap.set('n', '<leader>db', dap.toggle_breakpoint, { desc = 'Toggle breakpoint' })
       vim.keymap.set('n', '<leader>dB', function()
         dap.set_breakpoint(vim.fn.input('Breakpoint condition: '))
