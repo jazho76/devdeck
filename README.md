@@ -29,24 +29,24 @@ A [Nerd Font](https://www.nerdfonts.com/) is required for terminal glyphs to ren
 
 Toolset packages are optional. Install the packages for the toolsets you enable:
 
-| Toolset | Fedora packages |
-| --- | --- |
-| `angular` | `nodejs npm` |
-| `asm` | `cargo rust openssl-devel pkgconf-pkg-config` |
-| `c_cpp` | `gcc gcc-c++ make` |
-| `config` | `nodejs npm` |
-| `csharp` | `dotnet-sdk-10.0` |
-| `eslint` | `nodejs npm` |
-| `go` | `go` |
-| `graphql` | `nodejs npm` |
-| `javascript` | `nodejs npm` |
-| `javascript-debug` | `nodejs npm` |
-| `markdown` | `nodejs npm` |
-| `python` | `python3 python3-pip` |
-| `react` | `nodejs npm` |
-| `rust` | `cargo rust` |
-| `typescript` | `nodejs npm` |
-| `web-markup` | `nodejs npm` |
+| Toolset            | Fedora packages                               |
+| ------------------ | --------------------------------------------- |
+| `angular`          | `nodejs npm`                                  |
+| `asm`              | `cargo rust openssl-devel pkgconf-pkg-config` |
+| `c_cpp`            | `gcc gcc-c++ make`                            |
+| `config`           | `nodejs npm`                                  |
+| `csharp`           | `dotnet-sdk-10.0`                             |
+| `eslint`           | `nodejs npm`                                  |
+| `go`               | `go`                                          |
+| `graphql`          | `nodejs npm`                                  |
+| `javascript`       | `nodejs npm`                                  |
+| `javascript-debug` | `nodejs npm`                                  |
+| `markdown`         | `nodejs npm`                                  |
+| `python`           | `python3 python3-pip`                         |
+| `react`            | `nodejs npm`                                  |
+| `rust`             | `cargo rust`                                  |
+| `typescript`       | `nodejs npm`                                  |
+| `web-markup`       | `nodejs npm`                                  |
 
 ## Install
 
