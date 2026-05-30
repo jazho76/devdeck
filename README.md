@@ -4,7 +4,7 @@ nvim+tmux setup.
 
 ## Prerequisites
 
-Install the core Fedora packages first:
+Install the required Fedora packages first:
 
 ```bash
 sudo dnf install -y \
@@ -12,17 +12,24 @@ sudo dnf install -y \
   curl \
   tar \
   gzip \
-  unzip \
   tmux \
-  fzf \
   gcc \
-  gcc-c++ \
-  make \
   ripgrep \
-  fd-find \
-  wl-clipboard \
   tree-sitter-cli
 ```
+
+Optional packages enhance the setup:
+
+```bash
+sudo dnf install -y \
+  make \
+  fd-find \
+  wl-clipboard
+```
+
+- `make` - faster Telescope fuzzy sorting (builds telescope-fzf-native).
+- `fd-find` - faster file finding in Telescope.
+- `wl-clipboard` - system clipboard sync on Wayland.
 
 A [Nerd Font](https://www.nerdfonts.com/) is required for terminal glyphs to render correctly.
 
