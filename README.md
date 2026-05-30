@@ -39,9 +39,8 @@ sudo apt install -y \
   ripgrep \
   nodejs \
   npm
+npm install -g tree-sitter-cli
 ```
-
-`tree-sitter-cli` is not packaged in apt; install it with `npm install -g tree-sitter-cli` or `cargo install tree-sitter-cli`.
 
 </details>
 
