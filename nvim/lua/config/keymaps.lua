@@ -14,10 +14,9 @@ vim.keymap.set('n', '<A-o>', function()
   local current = vim.api.nvim_get_current_buf()
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     if buf ~= current
-      and vim.bo[buf].buflisted
-      and vim.bo[buf].buftype == ''
+      and vim.api.nvim_buf_is_valid(buf)
       and not vim.bo[buf].modified then
-      vim.api.nvim_buf_delete(buf, {})
+      vim.api.nvim_buf_delete(buf, { force = true })
     end
   end
 end, { noremap = true, silent = true, desc = 'Close all buffers except the current buffer' })
