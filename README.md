@@ -1,4 +1,4 @@
-# Devdeck
+# DevDeck
 
 nvim+tmux setup.
 
@@ -21,7 +21,6 @@ sudo dnf install -y \
   ripgrep \
   fd-find \
   wl-clipboard \
-  fontconfig \
   tree-sitter-cli
 ```
 
