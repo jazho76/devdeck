@@ -13,7 +13,7 @@ run_step() {
 }
 
 run_step "Installing tmux" "$SCRIPT_DIR/_install-tmux.sh"
-run_step "Configuring toolsets" "$SCRIPT_DIR/_configure-toolsets.sh"
+run_step "Configuring toolsets" "$SCRIPT_DIR/_configure-toolsets.py"
 run_step "Installing Neovim" "$SCRIPT_DIR/_install-nvim.sh"
 
 echo
@@ -28,4 +28,4 @@ case "$reply" in
 esac
 
 echo
-echo "Done. Re-pick toolsets anytime with: scripts/_configure-toolsets.sh"
+echo "Done. Re-pick toolsets anytime with: scripts/_configure-toolsets.py"
