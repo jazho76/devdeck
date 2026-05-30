@@ -91,7 +91,7 @@ if [ -x "$NVIM_INSTALL_DIR/bin/nvim" ]; then
     echo "Devdeck Neovim already installed: $NVIM_INSTALL_DIR/bin/nvim"
   else
     echo "Warning: Devdeck Neovim version is $installed_version, expected $NVIM_VERSION."
-    echo "Leaving existing Devdeck install untouched. Run scripts/uninstall-nvim.sh first to replace it."
+    echo "Leaving existing Devdeck install untouched. Run scripts/_uninstall-nvim.sh first to replace it."
   fi
 elif command -v nvim >/dev/null 2>&1; then
   nvim_path="$(command -v nvim)"

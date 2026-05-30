@@ -54,8 +54,8 @@ jobs:
           export XDG_CACHE_HOME="$HOME/.cache"
           export PATH="$HOME/.local/bin:$PATH"
 
-          ./scripts/install-tmux.sh
-          ./scripts/install-nvim.sh
+          ./scripts/_install-tmux.sh
+          ./scripts/_install-nvim.sh
 
       - name: Smoke Neovim startup
         run: |

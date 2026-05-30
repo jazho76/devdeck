@@ -12,8 +12,8 @@ run_step() {
   "$@"
 }
 
-run_step "Uninstalling Neovim" "$SCRIPT_DIR/uninstall-nvim.sh"
-run_step "Uninstalling tmux" "$SCRIPT_DIR/uninstall-tmux.sh"
+run_step "Uninstalling Neovim" "$SCRIPT_DIR/_uninstall-nvim.sh"
+run_step "Uninstalling tmux" "$SCRIPT_DIR/_uninstall-tmux.sh"
 
 echo
 echo "Done."
