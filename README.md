@@ -25,6 +25,8 @@ sudo dnf install -y \
   tree-sitter-cli
 ```
 
+A [Nerd Font](https://www.nerdfonts.com/) is required for terminal glyphs to render correctly.
+
 Toolset packages are optional. Install the packages for the toolsets you enable:
 
 | Toolset | Fedora packages |
