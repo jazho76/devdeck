@@ -1,6 +1,6 @@
 # DevDeck
 
-nvim+tmux setup.
+An opinionated neovim + tmux development environment.
 
 ## Prerequisites
 
