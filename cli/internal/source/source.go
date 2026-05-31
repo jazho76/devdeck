@@ -40,7 +40,7 @@ func EnsureClone(p paths.Paths) error {
 }
 
 func Pull(p paths.Paths) error {
-	ui.Info("Updating source: %s", p.Source)
+	ui.Info("Updating source")
 	if err := run.Stream("git", "-C", p.Source, "pull", "--ff-only"); err != nil {
 		return fmt.Errorf("%w\nmanaged source could not fast-forward; remove %s and re-run devdeck install", err, p.Source)
 	}

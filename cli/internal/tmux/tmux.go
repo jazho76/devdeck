@@ -42,7 +42,7 @@ func Install(p paths.Paths) error {
 	if err := fsx.EnsureSymlink(p.SourceTmux(), p.ConfigTmux); err != nil {
 		return err
 	}
-	ui.Info("Linked tmux config: %s -> %s", p.ConfigTmux, p.SourceTmux())
+	ui.Info("Linked tmux config")
 
 	if err := ensureTPM(p); err != nil {
 		return err

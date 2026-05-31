@@ -41,7 +41,6 @@ var installCmd = &cobra.Command{
 			return err
 		}
 
-		ui.Info("\nDone. Re-pick toolsets anytime with: devdeck toolsets")
 		return nil
 	},
 }

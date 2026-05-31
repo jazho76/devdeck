@@ -46,12 +46,11 @@ func Install(p paths.Paths) error {
 	if err := fsx.EnsureSymlink(p.SourceNvim(), p.ConfigNvim); err != nil {
 		return err
 	}
-	ui.Info("Linked Neovim config: %s -> %s", p.ConfigNvim, p.SourceNvim())
+	ui.Info("Linked Neovim config")
 
 	runHeadless(p, "+Lazy! install")
 
-	ui.Info(`Make sure ~/.local/bin is on your PATH: export PATH="$HOME/.local/bin:$PATH"`)
-	ui.Info("Done. Start Neovim with: nvim")
+	ui.Info("Done")
 	return nil
 }
 
@@ -117,7 +116,7 @@ func ensureBinary(p paths.Paths) error {
 func reportInstalledVersion(label, bin, mismatchHint string) {
 	v, _ := nvimVersion(bin)
 	if v == NvimVersion {
-		ui.Info("Using %s: %s", label, bin)
+		ui.Info("Using %s", label)
 		return
 	}
 	ui.Warn("%s at %s is %s, expected %s; %s", label, bin, v, NvimVersion, mismatchHint)

@@ -18,7 +18,7 @@ func configureToolsets(p paths.Paths, all bool) error {
 		if err := toolsets.Write(p, available, asSet(available)); err != nil {
 			return err
 		}
-		ui.Info("Enabled all toolsets in %s - restart nvim to apply.", p.ToolsetsLocal())
+		ui.Info("Enabled all toolsets")
 		return nil
 	}
 
@@ -44,7 +44,6 @@ func configureToolsets(p paths.Paths, all bool) error {
 	if err := toolsets.Write(p, available, result.Selected); err != nil {
 		return err
 	}
-	ui.Info("Saved %s - restart nvim to apply.", p.ToolsetsLocal())
 	return nil
 }
 
