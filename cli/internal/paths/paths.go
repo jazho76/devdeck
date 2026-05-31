@@ -15,6 +15,9 @@ type Paths struct {
 	ConfigNvim  string // ~/.config/nvim
 	ConfigTmux  string // ~/.config/tmux
 	TmuxData    string // ~/.local/share/tmux (TPM lives here, not under devdeck)
+	NvimShare   string // ~/.local/share/nvim (plugins, Mason tools)
+	NvimState   string // ~/.local/state/nvim (undo, marks, sessions)
+	NvimCache   string // ~/.cache/nvim
 }
 
 func Resolve() (Paths, error) {
@@ -36,6 +39,9 @@ func Resolve() (Paths, error) {
 		ConfigNvim:  filepath.Join(home, ".config", "nvim"),
 		ConfigTmux:  filepath.Join(home, ".config", "tmux"),
 		TmuxData:    filepath.Join(home, ".local", "share", "tmux"),
+		NvimShare:   filepath.Join(home, ".local", "share", "nvim"),
+		NvimState:   filepath.Join(home, ".local", "state", "nvim"),
+		NvimCache:   filepath.Join(home, ".cache", "nvim"),
 	}, nil
 }
 

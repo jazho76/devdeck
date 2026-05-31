@@ -60,7 +60,7 @@ func Update(p paths.Paths) error {
 	return nil
 }
 
-func Uninstall(p paths.Paths) error {
+func Uninstall(p paths.Paths, purge bool) error {
 	cfg, err := fsx.RemoveSymlinkIfPointsTo(p.ConfigNvim, p.SourceNvim())
 	if err != nil {
 		return err
@@ -81,7 +81,20 @@ func Uninstall(p paths.Paths) error {
 		ui.Info("Removed Devdeck Neovim: %s", p.NvimInstall)
 	}
 
-	ui.Info("Kept Neovim runtime state under ~/.local/share/nvim ~/.local/state/nvim ~/.cache/nvim")
+	if !purge {
+		ui.Info("Kept Neovim runtime state under ~/.local/share/nvim ~/.local/state/nvim ~/.cache/nvim")
+		return nil
+	}
+
+	for _, dir := range []string{p.NvimShare, p.NvimState, p.NvimCache} {
+		removed, err := fsx.RemoveDirIfExists(dir)
+		if err != nil {
+			return err
+		}
+		if removed {
+			ui.Info("Removed %s", dir)
+		}
+	}
 	return nil
 }
 
