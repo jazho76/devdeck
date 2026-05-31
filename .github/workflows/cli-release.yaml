@@ -3,14 +3,17 @@ name: CLI Release
 on:
   push:
     tags:
-      - 'cli/v*'
+      - 'v*'
 
 permissions:
   contents: write
 
 jobs:
-  goreleaser:
+  release:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
     steps:
       - uses: actions/checkout@v4
         with:
@@ -18,12 +21,13 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.26'
+          go-version: "1.26"
           cache-dependency-path: cli/go.sum
 
-      - uses: goreleaser/goreleaser-action@v6
+      - name: Build artifacts
+        run: make dist
+
+      - uses: softprops/action-gh-release@v2
         with:
-          version: '~> v2'
-          args: release --clean --config cli/.goreleaser.yaml
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: cli/bin/devdeck-linux-amd64
+          generate_release_notes: true
