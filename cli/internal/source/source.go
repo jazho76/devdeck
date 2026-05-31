@@ -18,8 +18,6 @@ const (
 	Branch = "main"
 )
 
-// EnsureClone makes sure the managed source tree exists and is up to date,
-// cloning it on first use and fast-forwarding it thereafter.
 func EnsureClone(p paths.Paths, log ui.Logger) error {
 	if err := sysreq.RequireCommand("git"); err != nil {
 		return err
@@ -41,7 +39,6 @@ func EnsureClone(p paths.Paths, log ui.Logger) error {
 	}
 }
 
-// Pull fast-forwards the managed source tree.
 func Pull(p paths.Paths, log ui.Logger) error {
 	log.Info("Updating source: %s", p.Source)
 	if err := run.Stream("git", "-C", p.Source, "pull", "--ff-only"); err != nil {

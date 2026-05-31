@@ -5,8 +5,6 @@ import (
 	"io"
 )
 
-// Logger prints install progress to a caller-supplied writer (typically the
-// command's stdout), keeping output testable and consistently formatted.
 type Logger struct {
 	w io.Writer
 }

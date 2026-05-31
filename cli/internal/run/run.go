@@ -7,31 +7,28 @@ import (
 	"strings"
 )
 
-// Stream runs a command with the parent's stdio so the user sees live output
-// (git clones, plugin installs, headless nvim).
-func Stream(name string, args ...string) error {
-	cmd := exec.Command(name, args...)
+func Stream(bin string, args ...string) error {
+	cmd := exec.Command(bin, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("%s: %w", line(name, args), err)
+		return fmt.Errorf("%s: %w", line(bin, args), err)
 	}
 	return nil
 }
 
-// Output runs a command and returns its trimmed standard output.
-func Output(name string, args ...string) (string, error) {
-	out, err := exec.Command(name, args...).Output()
+func Output(bin string, args ...string) (string, error) {
+	out, err := exec.Command(bin, args...).Output()
 	if err != nil {
-		return "", fmt.Errorf("%s: %w", line(name, args), err)
+		return "", fmt.Errorf("%s: %w", line(bin, args), err)
 	}
 	return strings.TrimSpace(string(out)), nil
 }
 
-func line(name string, args []string) string {
+func line(bin string, args []string) string {
 	if len(args) == 0 {
-		return name
+		return bin
 	}
-	return name + " " + strings.Join(args, " ")
+	return bin + " " + strings.Join(args, " ")
 }

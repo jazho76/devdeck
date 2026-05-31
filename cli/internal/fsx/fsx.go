@@ -10,8 +10,6 @@ import (
 
 var ErrUnmanagedTarget = errors.New("refusing to overwrite existing path")
 
-// EnsureSymlink points link at target, replacing an existing symlink but
-// refusing to clobber a real file or directory (mirrors `ln -sfn` with a guard).
 func EnsureSymlink(target, link string) error {
 	info, err := os.Lstat(link)
 	switch {
@@ -41,7 +39,6 @@ const (
 	KeptNotSymlink
 )
 
-// Describe renders a human-readable line for an uninstall outcome.
 func Describe(o Outcome, link string) string {
 	switch o {
 	case Removed:
@@ -55,9 +52,6 @@ func Describe(o Outcome, link string) string {
 	}
 }
 
-// RemoveSymlinkIfPointsTo removes link only when it is a symlink resolving (one
-// hop) to expected; anything else is left in place and reported. The one-hop
-// comparison survives teardown removing the source tree in the same run.
 func RemoveSymlinkIfPointsTo(link, expected string) (Outcome, error) {
 	info, err := os.Lstat(link)
 	switch {
@@ -85,7 +79,6 @@ func RemoveSymlinkIfPointsTo(link, expected string) (Outcome, error) {
 	return Removed, nil
 }
 
-// RemoveDirIfExists removes path recursively, reporting whether it was present.
 func RemoveDirIfExists(path string) (bool, error) {
 	if _, err := os.Lstat(path); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
