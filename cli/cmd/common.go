@@ -60,8 +60,19 @@ func configureToolsets(p paths.Paths, log ui.Logger, all bool) error {
 }
 
 func isInteractive() bool {
-	info, err := os.Stdin.Stat()
-	return err == nil && info.Mode()&os.ModeCharDevice != 0
+	if info, err := os.Stdin.Stat(); err == nil && info.Mode()&os.ModeCharDevice != 0 {
+		return true
+	}
+	return controllingTerminalAvailable()
+}
+
+func controllingTerminalAvailable() bool {
+	f, err := os.Open("/dev/tty")
+	if err != nil {
+		return false
+	}
+	f.Close()
+	return true
 }
 
 func asSet(names []string) map[string]bool {
