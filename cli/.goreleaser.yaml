@@ -1,0 +1,38 @@
+version: 2
+
+monorepo:
+  tag_prefix: cli/
+  dir: cli
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: devdeck
+    binary: devdeck
+    main: .
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/jazho76/devdeck/cli/internal/version.Version={{ .Version }}
+      - -X github.com/jazho76/devdeck/cli/internal/version.Commit={{ .ShortCommit }}
+      - -X github.com/jazho76/devdeck/cli/internal/version.Date={{ .Date }}
+
+archives:
+  - id: devdeck
+    name_template: "devdeck_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  github:
+    owner: jazho76
+    name: devdeck
