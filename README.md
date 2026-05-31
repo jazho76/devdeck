@@ -102,13 +102,24 @@ Toolset packages are optional. Install the packages for the toolsets you enable:
 ## Install
 
 ```bash
-git clone https://github.com/jazho76/devdeck.git ~/.devdeck
-cd ~/.devdeck
-./scripts/install.sh
+curl -fsSL https://raw.githubusercontent.com/jazho76/devdeck/main/scripts/get.sh | sh
+```
+
+This installs the `devdeck` CLI to `~/.local/bin` , make sure `~/.local/bin` is on your
+`PATH`.
+
+## Usage
+
+```bash
+devdeck install      # set everything up
+devdeck update       # update source and refresh plugins
+devdeck toolsets     # re-pick which Neovim toolsets are enabled
+devdeck uninstall    # remove the managed config, Neovim install, and source
+devdeck version
 ```
 
 ## Uninstall
 
 ```bash
-./scripts/uninstall.sh
+devdeck uninstall
 ```
