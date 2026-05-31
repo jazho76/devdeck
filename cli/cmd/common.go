@@ -6,20 +6,9 @@ import (
 	"github.com/jazho76/devdeck/cli/internal/paths"
 	"github.com/jazho76/devdeck/cli/internal/toolsets"
 	"github.com/jazho76/devdeck/cli/internal/ui"
-	"github.com/spf13/cobra"
 )
 
-func setup(cmd *cobra.Command) (paths.Paths, ui.Logger, error) {
-	p, err := paths.Resolve()
-	if err != nil {
-		return paths.Paths{}, ui.Logger{}, err
-	}
-	return p, ui.New(cmd.OutOrStdout()), nil
-}
-
-// configureToolsets is shared by the install and toolsets commands: it enables
-// everything with --all, otherwise runs the interactive picker.
-func configureToolsets(p paths.Paths, log ui.Logger, all bool) error {
+func configureToolsets(p paths.Paths, all bool) error {
 	available, err := toolsets.Available(p)
 	if err != nil {
 		return err
@@ -29,12 +18,12 @@ func configureToolsets(p paths.Paths, log ui.Logger, all bool) error {
 		if err := toolsets.Write(p, available, asSet(available)); err != nil {
 			return err
 		}
-		log.Info("Enabled all toolsets in %s - restart nvim to apply.", p.ToolsetsLocal())
+		ui.Info("Enabled all toolsets in %s - restart nvim to apply.", p.ToolsetsLocal())
 		return nil
 	}
 
 	if !isInteractive() {
-		log.Warn("no terminal for the toolset picker; keeping current selection (use --all to enable everything)")
+		ui.Warn("no terminal for the toolset picker; keeping current selection (use --all to enable everything)")
 		return nil
 	}
 
@@ -43,19 +32,19 @@ func configureToolsets(p paths.Paths, log ui.Logger, all bool) error {
 		return err
 	}
 
-	result, err := toolsets.RunPicker(available, enabled)
+	result, err := ui.MultiSelect("Select toolsets to enable", available, enabled)
 	if err != nil {
 		return err
 	}
 	if result.Cancelled {
-		log.Info("Cancelled. No changes.")
+		ui.Info("Cancelled. No changes.")
 		return nil
 	}
 
-	if err := toolsets.Write(p, available, result.Chosen); err != nil {
+	if err := toolsets.Write(p, available, result.Selected); err != nil {
 		return err
 	}
-	log.Info("Saved %s - restart nvim to apply.", p.ToolsetsLocal())
+	ui.Info("Saved %s - restart nvim to apply.", p.ToolsetsLocal())
 	return nil
 }
 

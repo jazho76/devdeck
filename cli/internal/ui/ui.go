@@ -2,25 +2,39 @@ package ui
 
 import (
 	"fmt"
-	"io"
+	"os"
 )
 
-type Logger struct {
-	w io.Writer
+const (
+	colorRed    = "\033[31m"
+	colorGreen  = "\033[32m"
+	colorYellow = "\033[33m"
+	colorBlue   = "\033[34m"
+	colorGrey   = "\033[90m"
+	colorWhite  = "\033[97m"
+	styleBold   = "\033[1m"
+	colorReset  = "\033[0m"
+)
+
+func Step(label string) {
+	fmt.Printf("\n==> %s\n", label)
 }
 
-func New(w io.Writer) Logger {
-	return Logger{w: w}
+func Info(format string, a ...any) {
+	fmt.Printf(format+"\n", a...)
 }
 
-func (l Logger) Step(label string) {
-	fmt.Fprintf(l.w, "\n==> %s\n", label)
+func Warn(format string, a ...any) {
+	fmt.Println(paint(colorYellow, "Warning: "+fmt.Sprintf(format, a...)))
 }
 
-func (l Logger) Info(format string, a ...any) {
-	fmt.Fprintf(l.w, format+"\n", a...)
+func Error(format string, a ...any) {
+	fmt.Fprintln(os.Stderr, paint(colorRed, "Error: "+fmt.Sprintf(format, a...)))
 }
 
-func (l Logger) Warn(format string, a ...any) {
-	fmt.Fprintf(l.w, "Warning: "+format+"\n", a...)
+func paint(color, s string) string {
+	if os.Getenv("NO_COLOR") != "" {
+		return s
+	}
+	return color + s + colorReset
 }

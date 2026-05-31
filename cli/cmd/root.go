@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/jazho76/devdeck/cli/internal/ui"
 	"github.com/jazho76/devdeck/cli/internal/version"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +22,7 @@ func init() {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		ui.Error("%s", err)
 		os.Exit(1)
 	}
 }

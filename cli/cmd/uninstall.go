@@ -3,7 +3,9 @@ package cmd
 import (
 	"github.com/jazho76/devdeck/cli/internal/fsx"
 	"github.com/jazho76/devdeck/cli/internal/nvim"
+	"github.com/jazho76/devdeck/cli/internal/paths"
 	"github.com/jazho76/devdeck/cli/internal/tmux"
+	"github.com/jazho76/devdeck/cli/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -12,33 +14,33 @@ var uninstallCmd = &cobra.Command{
 	Short: "Remove the devdeck environment",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		p, log, err := setup(cmd)
+		p, err := paths.Resolve()
 		if err != nil {
 			return err
 		}
 
-		log.Step("Uninstalling Neovim")
-		if err := nvim.Uninstall(p, log); err != nil {
+		ui.Step("Uninstalling Neovim")
+		if err := nvim.Uninstall(p); err != nil {
 			return err
 		}
 
-		log.Step("Uninstalling tmux")
-		if err := tmux.Uninstall(p, log); err != nil {
+		ui.Step("Uninstalling tmux")
+		if err := tmux.Uninstall(p); err != nil {
 			return err
 		}
 
-		log.Step("Removing source")
+		ui.Step("Removing source")
 		removed, err := fsx.RemoveDirIfExists(p.Source)
 		if err != nil {
 			return err
 		}
 		if removed {
-			log.Info("Removed source: %s", p.Source)
+			ui.Info("Removed source: %s", p.Source)
 		} else {
-			log.Info("No source to remove: %s", p.Source)
+			ui.Info("No source to remove: %s", p.Source)
 		}
 
-		log.Info("\nDone.")
+		ui.Info("\nDone.")
 		return nil
 	},
 }

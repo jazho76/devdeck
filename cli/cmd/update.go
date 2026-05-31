@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"github.com/jazho76/devdeck/cli/internal/nvim"
+	"github.com/jazho76/devdeck/cli/internal/paths"
 	"github.com/jazho76/devdeck/cli/internal/source"
 	"github.com/jazho76/devdeck/cli/internal/tmux"
+	"github.com/jazho76/devdeck/cli/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -12,27 +14,27 @@ var updateCmd = &cobra.Command{
 	Short: "Update the devdeck source and plugins",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		p, log, err := setup(cmd)
+		p, err := paths.Resolve()
 		if err != nil {
 			return err
 		}
 
-		log.Step("Updating source")
-		if err := source.Pull(p, log); err != nil {
+		ui.Step("Updating source")
+		if err := source.Pull(p); err != nil {
 			return err
 		}
 
-		log.Step("Updating tmux plugins")
-		if err := tmux.Update(p, log); err != nil {
+		ui.Step("Updating tmux plugins")
+		if err := tmux.Update(p); err != nil {
 			return err
 		}
 
-		log.Step("Updating Neovim plugins")
-		if err := nvim.Update(p, log); err != nil {
+		ui.Step("Updating Neovim plugins")
+		if err := nvim.Update(p); err != nil {
 			return err
 		}
 
-		log.Info("\nDone.")
+		ui.Info("\nDone.")
 		return nil
 	},
 }

@@ -18,7 +18,7 @@ const (
 	Branch = "main"
 )
 
-func EnsureClone(p paths.Paths, log ui.Logger) error {
+func EnsureClone(p paths.Paths) error {
 	if err := sysreq.RequireCommand("git"); err != nil {
 		return err
 	}
@@ -27,11 +27,11 @@ func EnsureClone(p paths.Paths, log ui.Logger) error {
 	case err != nil:
 		return err
 	case state == cloned:
-		return Pull(p, log)
+		return Pull(p)
 	case state == foreign:
 		return fmt.Errorf("refusing to manage existing path: %s", p.Source)
 	default:
-		log.Info("Cloning %s into %s", URL, p.Source)
+		ui.Info("Cloning %s into %s", URL, p.Source)
 		if err := os.MkdirAll(filepath.Dir(p.Source), 0o755); err != nil {
 			return err
 		}
@@ -39,8 +39,8 @@ func EnsureClone(p paths.Paths, log ui.Logger) error {
 	}
 }
 
-func Pull(p paths.Paths, log ui.Logger) error {
-	log.Info("Updating source: %s", p.Source)
+func Pull(p paths.Paths) error {
+	ui.Info("Updating source: %s", p.Source)
 	if err := run.Stream("git", "-C", p.Source, "pull", "--ff-only"); err != nil {
 		return fmt.Errorf("%w\nmanaged source could not fast-forward; remove %s and re-run devdeck install", err, p.Source)
 	}

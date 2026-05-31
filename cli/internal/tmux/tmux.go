@@ -21,7 +21,7 @@ const (
 
 var ErrInsideTmux = errors.New("cannot run inside an existing tmux session; exit tmux and try again")
 
-func Install(p paths.Paths, log ui.Logger) error {
+func Install(p paths.Paths) error {
 	if err := sysreq.RequireCommand("git"); err != nil {
 		return err
 	}
@@ -36,42 +36,42 @@ func Install(p paths.Paths, log ui.Logger) error {
 	}
 
 	if v, err := installedVersion(); err == nil && v != ExpectedVersion {
-		log.Warn("tmux version is %s, expected %s; continuing without modifying the binary", v, ExpectedVersion)
+		ui.Warn("tmux version is %s, expected %s; continuing without modifying the binary", v, ExpectedVersion)
 	}
 
 	if err := fsx.EnsureSymlink(p.SourceTmux(), p.ConfigTmux); err != nil {
 		return err
 	}
-	log.Info("Linked tmux config: %s -> %s", p.ConfigTmux, p.SourceTmux())
+	ui.Info("Linked tmux config: %s -> %s", p.ConfigTmux, p.SourceTmux())
 
-	if err := ensureTPM(p, log); err != nil {
+	if err := ensureTPM(p); err != nil {
 		return err
 	}
 	if err := run.Stream(filepath.Join(p.TPMDir(), "bin", "install_plugins")); err != nil {
 		return err
 	}
 
-	log.Info("Done. Start tmux with: tmux")
+	ui.Info("Done. Start tmux with: tmux")
 	return nil
 }
 
-func Update(p paths.Paths, log ui.Logger) error {
+func Update(p paths.Paths) error {
 	if _, err := os.Stat(filepath.Join(p.TPMDir(), ".git")); err != nil {
-		log.Info("No TPM checkout to update: %s", p.TPMDir())
+		ui.Info("No TPM checkout to update: %s", p.TPMDir())
 		return nil
 	}
 	if err := run.Stream("git", "-C", p.TPMDir(), "pull", "--ff-only"); err != nil {
-		log.Warn("could not update TPM: %v", err)
+		ui.Warn("could not update TPM: %v", err)
 	}
 	return nil
 }
 
-func Uninstall(p paths.Paths, log ui.Logger) error {
+func Uninstall(p paths.Paths) error {
 	outcome, err := fsx.RemoveSymlinkIfPointsTo(p.ConfigTmux, p.SourceTmux())
 	if err != nil {
 		return err
 	}
-	log.Info(fsx.Describe(outcome, p.ConfigTmux))
+	ui.Info("%s", fsx.Describe(outcome, p.ConfigTmux))
 
 	plugins := filepath.Join(p.TmuxData, "plugins")
 	removed, err := fsx.RemoveDirIfExists(plugins)
@@ -79,14 +79,14 @@ func Uninstall(p paths.Paths, log ui.Logger) error {
 		return err
 	}
 	if removed {
-		log.Info("Removed tmux plugins: %s", plugins)
+		ui.Info("Removed tmux plugins: %s", plugins)
 	}
 
-	log.Info("Kept tmux binary untouched.")
+	ui.Info("Kept tmux binary untouched.")
 	return nil
 }
 
-func ensureTPM(p paths.Paths, log ui.Logger) error {
+func ensureTPM(p paths.Paths) error {
 	tpm := p.TPMDir()
 	if _, err := os.Stat(filepath.Join(tpm, ".git")); err == nil {
 		return run.Stream("git", "-C", tpm, "pull", "--ff-only")
@@ -97,7 +97,7 @@ func ensureTPM(p paths.Paths, log ui.Logger) error {
 	if err := os.MkdirAll(filepath.Dir(tpm), 0o755); err != nil {
 		return err
 	}
-	log.Info("Cloning TPM into %s", tpm)
+	ui.Info("Cloning TPM into %s", tpm)
 	return run.Stream("git", "clone", tpmURL, tpm)
 }
 

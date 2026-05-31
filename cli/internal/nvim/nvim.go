@@ -31,7 +31,7 @@ var httpClient = &http.Client{
 	},
 }
 
-func Install(p paths.Paths, log ui.Logger) error {
+func Install(p paths.Paths) error {
 	if _, err := os.Stat(p.SourceNvimInit()); err != nil {
 		return fmt.Errorf("neovim config not found: %s", p.SourceNvimInit())
 	}
@@ -39,78 +39,78 @@ func Install(p paths.Paths, log ui.Logger) error {
 		return err
 	}
 
-	if err := ensureBinary(p, log); err != nil {
+	if err := ensureBinary(p); err != nil {
 		return err
 	}
 
 	if err := fsx.EnsureSymlink(p.SourceNvim(), p.ConfigNvim); err != nil {
 		return err
 	}
-	log.Info("Linked Neovim config: %s -> %s", p.ConfigNvim, p.SourceNvim())
+	ui.Info("Linked Neovim config: %s -> %s", p.ConfigNvim, p.SourceNvim())
 
-	runHeadless(p, log, "+Lazy! install")
+	runHeadless(p, "+Lazy! install")
 
-	log.Info(`Make sure ~/.local/bin is on your PATH: export PATH="$HOME/.local/bin:$PATH"`)
-	log.Info("Done. Start Neovim with: nvim")
+	ui.Info(`Make sure ~/.local/bin is on your PATH: export PATH="$HOME/.local/bin:$PATH"`)
+	ui.Info("Done. Start Neovim with: nvim")
 	return nil
 }
 
-func Update(p paths.Paths, log ui.Logger) error {
-	runHeadless(p, log, "+Lazy! sync")
+func Update(p paths.Paths) error {
+	runHeadless(p, "+Lazy! sync")
 	return nil
 }
 
-func Uninstall(p paths.Paths, log ui.Logger) error {
+func Uninstall(p paths.Paths) error {
 	cfg, err := fsx.RemoveSymlinkIfPointsTo(p.ConfigNvim, p.SourceNvim())
 	if err != nil {
 		return err
 	}
-	log.Info(fsx.Describe(cfg, p.ConfigNvim))
+	ui.Info("%s", fsx.Describe(cfg, p.ConfigNvim))
 
 	bin, err := fsx.RemoveSymlinkIfPointsTo(p.NvimBin, filepath.Join(p.NvimInstall, "bin", "nvim"))
 	if err != nil {
 		return err
 	}
-	log.Info(fsx.Describe(bin, p.NvimBin))
+	ui.Info("%s", fsx.Describe(bin, p.NvimBin))
 
 	removed, err := fsx.RemoveDirIfExists(p.NvimInstall)
 	if err != nil {
 		return err
 	}
 	if removed {
-		log.Info("Removed Devdeck Neovim: %s", p.NvimInstall)
+		ui.Info("Removed Devdeck Neovim: %s", p.NvimInstall)
 	}
 
-	log.Info("Kept Neovim runtime state under ~/.local/share/nvim ~/.local/state/nvim ~/.cache/nvim")
+	ui.Info("Kept Neovim runtime state under ~/.local/share/nvim ~/.local/state/nvim ~/.cache/nvim")
 	return nil
 }
 
-func ensureBinary(p paths.Paths, log ui.Logger) error {
+func ensureBinary(p paths.Paths) error {
 	devBin := filepath.Join(p.NvimInstall, "bin", "nvim")
 	if isExecutable(devBin) {
-		reportInstalledVersion(log, "Devdeck Neovim", devBin, "run devdeck uninstall to replace it")
+		reportInstalledVersion("Devdeck Neovim", devBin, "run devdeck uninstall to replace it")
 		return nil
 	}
 
 	if pathBin, err := exec.LookPath("nvim"); err == nil {
-		reportInstalledVersion(log, "Neovim on PATH", pathBin, "leaving it untouched")
+		reportInstalledVersion("Neovim on PATH", pathBin, "leaving it untouched")
 		return nil
 	}
 
-	log.Info("Installing Neovim %s to %s", NvimVersion, p.NvimInstall)
-	return downloadAndInstall(p, log)
+	ui.Info("Installing Neovim %s to %s", NvimVersion, p.NvimInstall)
+	return downloadAndInstall(p)
 }
 
-func reportInstalledVersion(log ui.Logger, label, bin, mismatchHint string) {
+func reportInstalledVersion(label, bin, mismatchHint string) {
 	v, _ := nvimVersion(bin)
 	if v == NvimVersion {
-		log.Info("Using %s: %s", label, bin)
+		ui.Info("Using %s: %s", label, bin)
 		return
 	}
-	log.Warn("%s at %s is %s, expected %s; %s", label, bin, v, NvimVersion, mismatchHint)
+	ui.Warn("%s at %s is %s, expected %s; %s", label, bin, v, NvimVersion, mismatchHint)
 }
 
-func downloadAndInstall(p paths.Paths, log ui.Logger) error {
+func downloadAndInstall(p paths.Paths) error {
 	arch, err := nvimArch()
 	if err != nil {
 		return err
@@ -129,7 +129,7 @@ func downloadAndInstall(p paths.Paths, log ui.Logger) error {
 	}
 	defer os.RemoveAll(tmp)
 
-	log.Info("Downloading %s", url)
+	ui.Info("Downloading %s", url)
 	if err := download(url, tmp); err != nil {
 		return err
 	}
@@ -244,14 +244,14 @@ func replaceLink(target string, link func() error) error {
 	return link()
 }
 
-func runHeadless(p paths.Paths, log ui.Logger, lazyCmd string) {
+func runHeadless(p paths.Paths, lazyCmd string) {
 	bin, ok := resolveNvimBin(p)
 	if !ok {
-		log.Warn(`nvim not found on PATH; add ~/.local/bin to PATH, then run: nvim --headless "%s" "+qa"`, lazyCmd)
+		ui.Warn(`nvim not found on PATH; add ~/.local/bin to PATH, then run: nvim --headless "%s" "+qa"`, lazyCmd)
 		return
 	}
 	if err := run.Stream(bin, "--headless", lazyCmd, "+qa"); err != nil {
-		log.Warn("nvim %s failed: %v", lazyCmd, err)
+		ui.Warn("nvim %s failed: %v", lazyCmd, err)
 	}
 }
 
