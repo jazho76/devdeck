@@ -158,6 +158,12 @@ func buildSession(temp string, s Session, baseIdx, paneBaseIdx int, home string)
 				break
 			}
 		}
+
+		if w.Zoomed {
+			if err := tmuxRun("resize-pane", "-Z", "-t", winTarget); err != nil {
+				return err
+			}
+		}
 	}
 
 	for wi, w := range s.Windows {

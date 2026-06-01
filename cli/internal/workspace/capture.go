@@ -24,6 +24,7 @@ func capture() (version string, sessions []Session, err error) {
 		"#{pane_current_path}",
 		"#{pane_current_command}",
 		"#{pane_pid}",
+		"#{window_zoomed_flag}",
 	}, sep)
 
 	out, err := tmuxQuery("list-panes", "-a", "-F", format)
@@ -40,7 +41,7 @@ func capture() (version string, sessions []Session, err error) {
 
 	for _, raw := range strings.Split(out, "\n") {
 		f := strings.Split(raw, sep)
-		if len(f) != 14 {
+		if len(f) != 15 {
 			return "", nil, fmt.Errorf("unexpected tmux output: %q", raw)
 		}
 		wi, err := strconv.Atoi(f[3])
@@ -79,6 +80,7 @@ func capture() (version string, sessions []Session, err error) {
 				Width:  ww,
 				Height: wh,
 				Layout: f[8],
+				Zoomed: f[14] == "1",
 			})
 			wj = len(sessions[si].Windows) - 1
 			windowAt[wKey] = wj

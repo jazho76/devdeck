@@ -43,6 +43,7 @@ type Window struct {
 	Width  int    `json:"width"`
 	Height int    `json:"height"`
 	Layout string `json:"layout"`
+	Zoomed bool   `json:"zoomed,omitempty"`
 	Panes  []Pane `json:"panes"`
 }
 
