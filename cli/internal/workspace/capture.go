@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/jazho76/devdeck/cli/internal/run"
 )
 
 func capture() (version string, sessions []Session, err error) {
@@ -25,7 +23,7 @@ func capture() (version string, sessions []Session, err error) {
 		"#{pane_current_path}",
 	}, sep)
 
-	out, err := run.Query("tmux", "list-panes", "-a", "-F", format)
+	out, err := tmuxQuery("list-panes", "-a", "-F", format)
 	if err != nil {
 		return "", nil, fmt.Errorf("could not read tmux server; is tmux running? %w", err)
 	}

@@ -10,7 +10,6 @@ import (
 	"syscall"
 
 	"github.com/jazho76/devdeck/cli/internal/paths"
-	"github.com/jazho76/devdeck/cli/internal/run"
 	"github.com/jazho76/devdeck/cli/internal/ui"
 )
 
@@ -59,7 +58,7 @@ func Restore(p paths.Paths, name string) error {
 
 	cleanup := func() {
 		for _, t := range temps {
-			_ = tmux("kill-session", "-t", t)
+			_ = tmuxRun("kill-session", "-t", t)
 		}
 	}
 	for i, s := range ws.Sessions {
@@ -81,18 +80,18 @@ func Restore(p paths.Paths, name string) error {
 		// Killing the session that hosts this process closes our pane and SIGHUPs us;
 		// ignore it so the kill/rename/switch below still finishes.
 		signal.Ignore(syscall.SIGHUP)
-		if err := tmux("switch-client", "-t", temps[focus]); err != nil {
+		if err := tmuxRun("switch-client", "-t", temps[focus]); err != nil {
 			cleanup()
 			return err
 		}
 	}
 	for _, s := range existing {
-		if err := tmux("kill-session", "-t", s); err != nil {
+		if err := tmuxRun("kill-session", "-t", s); err != nil {
 			ui.Warn("could not kill session %q: %v", s, err)
 		}
 	}
 	for i, s := range ws.Sessions {
-		if err := tmux("rename-session", "-t", temps[i], s.Name); err != nil {
+		if err := tmuxRun("rename-session", "-t", temps[i], s.Name); err != nil {
 			return err
 		}
 	}
@@ -100,9 +99,9 @@ func Restore(p paths.Paths, name string) error {
 	ui.Info("Restored workspace: %s", ws.Name)
 	focusName := ws.Sessions[focus].Name
 	if attached {
-		return tmux("switch-client", "-t", focusName)
+		return tmuxRun("switch-client", "-t", focusName)
 	}
-	return run.Stream("tmux", "attach-session", "-t", focusName)
+	return tmuxStream("attach-session", "-t", focusName)
 }
 
 func buildSession(temp string, s Session, baseIdx, paneBaseIdx int, home string) error {
@@ -119,28 +118,28 @@ func buildSession(temp string, s Session, baseIdx, paneBaseIdx int, home string)
 			if w.Width > 0 && w.Height > 0 {
 				args = append(args, "-x", strconv.Itoa(w.Width), "-y", strconv.Itoa(w.Height))
 			}
-			if err := tmux(args...); err != nil {
+			if err := tmuxRun(args...); err != nil {
 				return err
 			}
-		} else if err := tmux("new-window", "-d", "-t", temp, "-n", w.Name, "-c", firstCwd); err != nil {
+		} else if err := tmuxRun("new-window", "-d", "-t", temp, "-n", w.Name, "-c", firstCwd); err != nil {
 			return err
 		}
 
 		for _, pane := range w.Panes[1:] {
-			if err := tmux("split-window", "-t", winTarget, "-c", resolveCwd(pane.Cwd, home)); err != nil {
+			if err := tmuxRun("split-window", "-t", winTarget, "-c", resolveCwd(pane.Cwd, home)); err != nil {
 				return err
 			}
 		}
 
 		if w.Layout != "" {
-			if err := tmux("select-layout", "-t", winTarget, w.Layout); err != nil {
+			if err := tmuxRun("select-layout", "-t", winTarget, w.Layout); err != nil {
 				return err
 			}
 		}
 
 		for pi, pane := range w.Panes {
 			if pane.Active {
-				if err := tmux("select-pane", "-t", fmt.Sprintf("%s.%d", winTarget, paneBaseIdx+pi)); err != nil {
+				if err := tmuxRun("select-pane", "-t", fmt.Sprintf("%s.%d", winTarget, paneBaseIdx+pi)); err != nil {
 					return err
 				}
 				break
@@ -150,7 +149,7 @@ func buildSession(temp string, s Session, baseIdx, paneBaseIdx int, home string)
 
 	for wi, w := range s.Windows {
 		if w.Active {
-			return tmux("select-window", "-t", fmt.Sprintf("%s:%d", temp, baseIdx+wi))
+			return tmuxRun("select-window", "-t", fmt.Sprintf("%s:%d", temp, baseIdx+wi))
 		}
 	}
 	return nil
@@ -167,7 +166,7 @@ func resolveCwd(cwd, home string) string {
 }
 
 func currentSessions() []string {
-	out, err := run.Query("tmux", "list-sessions", "-F", "#{session_name}")
+	out, err := tmuxQuery("list-sessions", "-F", "#{session_name}")
 	if err != nil {
 		return nil
 	}
@@ -179,7 +178,7 @@ func currentSessions() []string {
 }
 
 func tmuxIndexOption(scope, name string) int {
-	out, err := run.Query("tmux", "show-options", scope, name)
+	out, err := tmuxQuery("show-options", scope, name)
 	if err != nil {
 		return 0
 	}
@@ -188,9 +187,4 @@ func tmuxIndexOption(scope, name string) int {
 		return 0
 	}
 	return n
-}
-
-func tmux(args ...string) error {
-	_, err := run.Query("tmux", args...)
-	return err
 }
