@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -107,6 +109,24 @@ func Save(p paths.Paths, name string) error {
 		return err
 	}
 	return fsx.WriteFileAtomic(p.WorkspaceFile(slug), data, 0o644)
+}
+
+func List(p paths.Paths) ([]Workspace, error) {
+	matches, err := filepath.Glob(filepath.Join(p.Workspaces, "*.json"))
+	if err != nil {
+		return nil, err
+	}
+	sort.Strings(matches)
+
+	out := make([]Workspace, 0, len(matches))
+	for _, m := range matches {
+		ws, err := load(m)
+		if err != nil {
+			continue
+		}
+		out = append(out, ws)
+	}
+	return out, nil
 }
 
 func load(path string) (Workspace, error) {
