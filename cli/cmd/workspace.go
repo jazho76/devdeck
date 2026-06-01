@@ -30,7 +30,21 @@ var workspaceSaveCmd = &cobra.Command{
 	},
 }
 
+var workspaceRestoreCmd = &cobra.Command{
+	Use:   "restore <name>",
+	Short: "Replace the current tmux server with a saved workspace",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		p, err := paths.Resolve()
+		if err != nil {
+			return err
+		}
+		return workspace.Restore(p, args[0])
+	},
+}
+
 func init() {
 	workspaceCmd.AddCommand(workspaceSaveCmd)
+	workspaceCmd.AddCommand(workspaceRestoreCmd)
 	rootCmd.AddCommand(workspaceCmd)
 }
