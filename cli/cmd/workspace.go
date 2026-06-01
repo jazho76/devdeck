@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/jazho76/devdeck/cli/internal/paths"
@@ -99,9 +100,52 @@ var workspaceRestoreCmd = &cobra.Command{
 	},
 }
 
+var workspaceRestorePopupCmd = &cobra.Command{
+	Use:    "restore-popup",
+	Short:  "Interactive restore prompt",
+	Args:   cobra.NoArgs,
+	Hidden: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		p, err := paths.Resolve()
+		if err != nil {
+			return err
+		}
+		if !isInteractive() {
+			return errors.New("restore-popup requires a terminal")
+		}
+
+		saved, err := workspace.List(p)
+		if err != nil {
+			return err
+		}
+		if len(saved) == 0 {
+			workspace.Notify("No saved workspaces")
+			return nil
+		}
+		sort.Slice(saved, func(i, j int) bool {
+			return saved[i].UpdatedAt.After(saved[j].UpdatedAt)
+		})
+
+		labels := make([]string, len(saved))
+		for i, w := range saved {
+			labels[i] = fmt.Sprintf("%s  (saved %s)", w.Name, w.UpdatedAt.Local().Format("2006-01-02"))
+		}
+
+		choice, err := ui.SingleSelect("Restore workspace", labels)
+		if err != nil {
+			return err
+		}
+		if choice.Cancelled {
+			return nil
+		}
+		return workspace.Restore(p, saved[choice.Index].Slug)
+	},
+}
+
 func init() {
 	workspaceCmd.AddCommand(workspaceSaveCmd)
 	workspaceCmd.AddCommand(workspaceSavePopupCmd)
 	workspaceCmd.AddCommand(workspaceRestoreCmd)
+	workspaceCmd.AddCommand(workspaceRestorePopupCmd)
 	rootCmd.AddCommand(workspaceCmd)
 }
