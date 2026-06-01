@@ -79,6 +79,26 @@ func RemoveSymlinkIfPointsTo(link, expected string) (Outcome, error) {
 	return Removed, nil
 }
 
+func WriteFileAtomic(path string, data []byte, perm os.FileMode) error {
+	tmp, err := os.CreateTemp(filepath.Dir(path), ".tmp-*")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmp.Name())
+
+	if _, err := tmp.Write(data); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+	if err := os.Chmod(tmp.Name(), perm); err != nil {
+		return err
+	}
+	return os.Rename(tmp.Name(), path)
+}
+
 func RemoveDirIfExists(path string) (bool, error) {
 	if _, err := os.Lstat(path); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {

@@ -18,6 +18,7 @@ type Paths struct {
 	NvimShare   string // ~/.local/share/nvim (plugins, Mason tools)
 	NvimState   string // ~/.local/state/nvim (undo, marks, sessions)
 	NvimCache   string // ~/.cache/nvim
+	Workspaces  string // ~/.local/share/devdeck/workspaces
 }
 
 func Resolve() (Paths, error) {
@@ -42,7 +43,12 @@ func Resolve() (Paths, error) {
 		NvimShare:   filepath.Join(home, ".local", "share", "nvim"),
 		NvimState:   filepath.Join(home, ".local", "state", "nvim"),
 		NvimCache:   filepath.Join(home, ".cache", "nvim"),
+		Workspaces:  filepath.Join(share, "workspaces"),
 	}, nil
+}
+
+func (p Paths) WorkspaceFile(slug string) string {
+	return filepath.Join(p.Workspaces, slug+".json")
 }
 
 func (p Paths) SourceNvim() string     { return filepath.Join(p.Source, "nvim") }

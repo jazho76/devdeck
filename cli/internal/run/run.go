@@ -1,6 +1,7 @@
 package run
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -24,6 +25,20 @@ func Output(bin string, args ...string) (string, error) {
 		return "", fmt.Errorf("%s: %w", line(bin, args), err)
 	}
 	return strings.TrimSpace(string(out)), nil
+}
+
+func Query(bin string, args ...string) (string, error) {
+	var stdout, stderr bytes.Buffer
+	cmd := exec.Command(bin, args...)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		if msg := strings.TrimSpace(stderr.String()); msg != "" {
+			return "", fmt.Errorf("%s: %s", bin, msg)
+		}
+		return "", fmt.Errorf("%s: %w", bin, err)
+	}
+	return stdout.String(), nil
 }
 
 func line(bin string, args []string) string {

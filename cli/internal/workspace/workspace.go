@@ -1,0 +1,122 @@
+package workspace
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"regexp"
+	"strings"
+	"time"
+
+	"github.com/jazho76/devdeck/cli/internal/fsx"
+	"github.com/jazho76/devdeck/cli/internal/paths"
+	"github.com/jazho76/devdeck/cli/internal/ui"
+)
+
+const SchemaVersion = 1
+
+const maxNameLen = 255
+
+type Workspace struct {
+	SchemaVersion int       `json:"schemaVersion"`
+	Name          string    `json:"name"`
+	Slug          string    `json:"slug"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
+	TmuxVersion   string    `json:"tmuxVersion"`
+	Sessions      []Session `json:"sessions"`
+}
+
+type Session struct {
+	Name     string   `json:"name"`
+	Attached bool     `json:"attached"`
+	Windows  []Window `json:"windows"`
+}
+
+type Window struct {
+	Index  int    `json:"index"`
+	Name   string `json:"name"`
+	Active bool   `json:"active"`
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
+	Layout string `json:"layout"`
+	Panes  []Pane `json:"panes"`
+}
+
+type Pane struct {
+	Index  int    `json:"index"`
+	Active bool   `json:"active"`
+	Cwd    string `json:"cwd"`
+}
+
+var slugStrip = regexp.MustCompile(`[^a-z0-9]+`)
+
+func Slugify(name string) string {
+	s := slugStrip.ReplaceAllString(strings.ToLower(name), "-")
+	return strings.Trim(s, "-")
+}
+
+func ValidateName(name string) error {
+	if strings.TrimSpace(name) == "" {
+		return errors.New("workspace name cannot be empty")
+	}
+	if len(name) > maxNameLen {
+		return fmt.Errorf("workspace name too long (max %d characters)", maxNameLen)
+	}
+	return nil
+}
+
+func Save(p paths.Paths, name string) error {
+	if err := ValidateName(name); err != nil {
+		return err
+	}
+	slug := Slugify(name)
+	if slug == "" {
+		return fmt.Errorf("workspace name %q has no usable characters for a filename", name)
+	}
+
+	version, sessions, err := capture()
+	if err != nil {
+		return err
+	}
+
+	now := time.Now().UTC()
+	createdAt := now
+	if existing, err := load(p.WorkspaceFile(slug)); err == nil {
+		createdAt = existing.CreatedAt
+	} else if !errors.Is(err, os.ErrNotExist) {
+		ui.Warn("could not read existing workspace %q, overwriting: %v", slug, err)
+	}
+
+	ws := Workspace{
+		SchemaVersion: SchemaVersion,
+		Name:          name,
+		Slug:          slug,
+		CreatedAt:     createdAt,
+		UpdatedAt:     now,
+		TmuxVersion:   version,
+		Sessions:      sessions,
+	}
+
+	data, err := json.MarshalIndent(ws, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(p.Workspaces, 0o755); err != nil {
+		return err
+	}
+	return fsx.WriteFileAtomic(p.WorkspaceFile(slug), data, 0o644)
+}
+
+func load(path string) (Workspace, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return Workspace{}, err
+	}
+	var ws Workspace
+	if err := json.Unmarshal(data, &ws); err != nil {
+		return Workspace{}, fmt.Errorf("reading %s: %w", path, err)
+	}
+	return ws, nil
+}
