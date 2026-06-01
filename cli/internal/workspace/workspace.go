@@ -47,9 +47,10 @@ type Window struct {
 }
 
 type Pane struct {
-	Index  int    `json:"index"`
-	Active bool   `json:"active"`
-	Cwd    string `json:"cwd"`
+	Index   int      `json:"index"`
+	Active  bool     `json:"active"`
+	Cwd     string   `json:"cwd"`
+	Command []string `json:"command,omitempty"`
 }
 
 var slugStrip = regexp.MustCompile(`[^a-z0-9]+`)

@@ -2,6 +2,7 @@ package workspace
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -21,6 +22,8 @@ func capture() (version string, sessions []Session, err error) {
 		"#{pane_index}",
 		"#{?pane_active,1,0}",
 		"#{pane_current_path}",
+		"#{pane_current_command}",
+		"#{pane_pid}",
 	}, sep)
 
 	out, err := tmuxQuery("list-panes", "-a", "-F", format)
@@ -37,7 +40,7 @@ func capture() (version string, sessions []Session, err error) {
 
 	for _, raw := range strings.Split(out, "\n") {
 		f := strings.Split(raw, sep)
-		if len(f) != 12 {
+		if len(f) != 14 {
 			return "", nil, fmt.Errorf("unexpected tmux output: %q", raw)
 		}
 		wi, err := strconv.Atoi(f[3])
@@ -81,12 +84,76 @@ func capture() (version string, sessions []Session, err error) {
 			windowAt[wKey] = wj
 		}
 
+		var command []string
+		if f[12] == nvimCommand {
+			if shellPID, err := strconv.Atoi(f[13]); err == nil {
+				command = nvimArgs(shellPID)
+			}
+		}
+
 		sessions[si].Windows[wj].Panes = append(sessions[si].Windows[wj].Panes, Pane{
-			Index:  pi,
-			Active: f[10] == "1",
-			Cwd:    f[11],
+			Index:   pi,
+			Active:  f[10] == "1",
+			Cwd:     f[11],
+			Command: command,
 		})
 	}
 
 	return version, sessions, nil
+}
+
+const nvimCommand = "nvim"
+
+func nvimArgs(shellPID int) []string {
+	entries, err := os.ReadDir("/proc")
+	if err != nil {
+		return nil
+	}
+	for _, entry := range entries {
+		pid, err := strconv.Atoi(entry.Name())
+		if err != nil {
+			continue
+		}
+		name, ppid, ok := procStatus(pid)
+		if !ok || name != nvimCommand || ppid != shellPID {
+			continue
+		}
+		return procArgs(pid)
+	}
+	return nil
+}
+
+func procStatus(pid int) (name string, ppid int, ok bool) {
+	data, err := os.ReadFile(fmt.Sprintf("/proc/%d/status", pid))
+	if err != nil {
+		return "", 0, false
+	}
+	var haveName, havePPID bool
+	for _, line := range strings.Split(string(data), "\n") {
+		switch {
+		case strings.HasPrefix(line, "Name:"):
+			name = strings.TrimSpace(strings.TrimPrefix(line, "Name:"))
+			haveName = true
+		case strings.HasPrefix(line, "PPid:"):
+			ppid, err = strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(line, "PPid:")))
+			havePPID = err == nil
+		}
+		if haveName && havePPID {
+			return name, ppid, true
+		}
+	}
+	return "", 0, false
+}
+
+func procArgs(pid int) []string {
+	data, err := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
+	if err != nil || len(data) == 0 {
+		return nil
+	}
+	const argSeparator = "\x00"
+	args := strings.Split(strings.TrimRight(string(data), argSeparator), argSeparator)
+	if len(args) == 0 {
+		return nil
+	}
+	return args
 }

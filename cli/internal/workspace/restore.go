@@ -141,6 +141,16 @@ func buildSession(temp string, s Session, baseIdx, paneBaseIdx int, home string)
 		}
 
 		for pi, pane := range w.Panes {
+			if len(pane.Command) == 0 {
+				continue
+			}
+			target := fmt.Sprintf("%s.%d", winTarget, paneBaseIdx+pi)
+			if err := tmuxRun("send-keys", "-t", target, shellQuote(pane.Command), "C-m"); err != nil {
+				return err
+			}
+		}
+
+		for pi, pane := range w.Panes {
 			if pane.Active {
 				if err := tmuxRun("select-pane", "-t", fmt.Sprintf("%s.%d", winTarget, paneBaseIdx+pi)); err != nil {
 					return err
@@ -156,6 +166,14 @@ func buildSession(temp string, s Session, baseIdx, paneBaseIdx int, home string)
 		}
 	}
 	return nil
+}
+
+func shellQuote(args []string) string {
+	quoted := make([]string, len(args))
+	for i, a := range args {
+		quoted[i] = "'" + strings.ReplaceAll(a, "'", `'\''`) + "'"
+	}
+	return strings.Join(quoted, " ")
 }
 
 func resolveCwd(cwd, home string) string {
