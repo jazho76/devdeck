@@ -129,6 +129,9 @@ func buildSession(temp string, s Session, baseIdx, paneBaseIdx int, home string)
 			if err := tmuxRun("split-window", "-t", winTarget, "-c", resolveCwd(pane.Cwd, home)); err != nil {
 				return err
 			}
+			if err := tmuxRun("select-layout", "-t", winTarget, "tiled"); err != nil {
+				return err
+			}
 		}
 
 		if w.Layout != "" {
