@@ -81,6 +81,8 @@ func tokyoNightTheme() *huh.Theme {
 
 func formKeyMap() *huh.KeyMap {
 	km := huh.NewDefaultKeyMap()
+	km.Quit.SetKeys("esc", "ctrl+c")
+	km.Quit.SetHelp("esc", "cancel")
 	km.MultiSelect.SelectAll.SetKeys("a")
 	km.MultiSelect.SelectAll.SetHelp("a", "select all")
 	km.MultiSelect.SelectNone.SetKeys("n")

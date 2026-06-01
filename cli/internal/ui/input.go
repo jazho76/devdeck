@@ -30,9 +30,7 @@ func Prompt(prompt string, validate func(string) (hint string, ok bool)) (Input,
 			return ""
 		}, &value)
 
-	err := huh.NewForm(huh.NewGroup(field)).
-		WithTheme(formTheme()).
-		Run()
+	err := sizedForm(field).Run()
 	if errors.Is(err, huh.ErrUserAborted) {
 		return Input{Cancelled: true}, nil
 	}

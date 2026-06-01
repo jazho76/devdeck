@@ -27,10 +27,7 @@ func MultiSelect(prompt string, items []string, selected map[string]bool) (Selec
 		Filterable(true).
 		Value(&values)
 
-	err := huh.NewForm(huh.NewGroup(field)).
-		WithTheme(formTheme()).
-		WithKeyMap(formKeyMap()).
-		Run()
+	err := sizedForm(field).Run()
 	if errors.Is(err, huh.ErrUserAborted) {
 		return Selection{Cancelled: true}, nil
 	}

@@ -21,12 +21,9 @@ func SingleSelect(prompt string, items []string) (Choice, error) {
 	field := huh.NewSelect[int]().
 		Title(prompt).
 		Options(options...).
-		Filtering(true).
 		Value(&index)
 
-	err := huh.NewForm(huh.NewGroup(field)).
-		WithTheme(formTheme()).
-		Run()
+	err := sizedForm(field).Run()
 	if errors.Is(err, huh.ErrUserAborted) {
 		return Choice{Cancelled: true}, nil
 	}
