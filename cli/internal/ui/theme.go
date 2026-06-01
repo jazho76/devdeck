@@ -35,7 +35,7 @@ func formTheme() *huh.Theme { return tokyoNightTheme() }
 func tokyoNightTheme() *huh.Theme {
 	t := huh.ThemeBase()
 
-	t.Focused.Base = t.Focused.Base.BorderForeground(tokyoBgHigh)
+	t.Focused.Base = t.Focused.Base.BorderStyle(lipgloss.HiddenBorder())
 	t.Focused.Card = t.Focused.Base
 	t.Focused.Title = t.Focused.Title.Foreground(tokyoBlue).Bold(true)
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(tokyoBlue).Bold(true)
