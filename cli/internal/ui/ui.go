@@ -5,36 +5,18 @@ import (
 	"os"
 )
 
-const (
-	colorRed    = "\033[31m"
-	colorGreen  = "\033[32m"
-	colorYellow = "\033[33m"
-	colorBlue   = "\033[34m"
-	colorGrey   = "\033[90m"
-	colorWhite  = "\033[97m"
-	styleBold   = "\033[1m"
-	colorReset  = "\033[0m"
-)
-
 func Step(label string) {
-	fmt.Printf("\n==> %s\n", label)
+	fmt.Printf("\n%s\n", stepStyle.Render("==> "+label))
 }
 
 func Info(format string, a ...any) {
-	fmt.Printf(format+"\n", a...)
+	fmt.Println(infoStyle.Render(fmt.Sprintf(format, a...)))
 }
 
 func Warn(format string, a ...any) {
-	fmt.Println(paint(colorYellow, "Warning: "+fmt.Sprintf(format, a...)))
+	fmt.Println(warnStyle.Render("Warning: " + fmt.Sprintf(format, a...)))
 }
 
 func Error(format string, a ...any) {
-	fmt.Fprintln(os.Stderr, paint(colorRed, "Error: "+fmt.Sprintf(format, a...)))
-}
-
-func paint(color, s string) string {
-	if os.Getenv("NO_COLOR") != "" {
-		return s
-	}
-	return color + s + colorReset
+	fmt.Fprintln(os.Stderr, errorStyle.Render("Error: "+fmt.Sprintf(format, a...)))
 }

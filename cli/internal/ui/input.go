@@ -1,10 +1,9 @@
 package ui
 
 import (
-	"fmt"
-	"strings"
+	"errors"
 
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
 )
 
 type Input struct {
@@ -13,74 +12,32 @@ type Input struct {
 }
 
 func Prompt(prompt string, validate func(string) (hint string, ok bool)) (Input, error) {
-	final, err := tea.NewProgram(input{prompt: prompt, validate: validate}).Run()
+	var value string
+
+	field := huh.NewInput().
+		Title(prompt).
+		Value(&value).
+		Validate(func(s string) error {
+			if hint, ok := validate(s); !ok {
+				return errors.New(hint)
+			}
+			return nil
+		}).
+		DescriptionFunc(func() string {
+			if hint, ok := validate(value); ok {
+				return hint
+			}
+			return ""
+		}, &value)
+
+	err := huh.NewForm(huh.NewGroup(field)).
+		WithTheme(formTheme()).
+		Run()
+	if errors.Is(err, huh.ErrUserAborted) {
+		return Input{Cancelled: true}, nil
+	}
 	if err != nil {
 		return Input{}, err
 	}
-	m := final.(input)
-	if m.cancelled {
-		return Input{Cancelled: true}, nil
-	}
-	return Input{Value: m.value}, nil
-}
-
-type input struct {
-	prompt    string
-	value     string
-	validate  func(string) (string, bool)
-	cancelled bool
-}
-
-func (m input) Init() tea.Cmd { return nil }
-
-func (m input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	key, ok := msg.(tea.KeyMsg)
-	if !ok {
-		return m, nil
-	}
-
-	switch key.Type {
-	case tea.KeyRunes:
-		m.value += string(key.Runes)
-	case tea.KeySpace:
-		m.value += " "
-	case tea.KeyBackspace:
-		if m.value != "" {
-			r := []rune(m.value)
-			m.value = string(r[:len(r)-1])
-		}
-	case tea.KeyEnter:
-		if _, valid := m.validate(m.value); valid {
-			return m, tea.Quit
-		}
-	case tea.KeyEsc, tea.KeyCtrlC:
-		m.cancelled = true
-		return m, tea.Quit
-	}
-	return m, nil
-}
-
-func (m input) View() string {
-	var b strings.Builder
-
-	fmt.Fprintf(&b, "%s %s %s\n",
-		paint(colorBlue, "?"),
-		paint(styleBold+colorWhite, m.prompt),
-		paint(colorGrey, "›"),
-	)
-	fmt.Fprintf(&b, "  %s\n\n", paint(colorGrey, "Enter: save · Esc: cancel"))
-
-	fmt.Fprintf(&b, "%s %s%s\n", paint(colorBlue, glyphSelector), m.value, paint(colorGrey, "▮"))
-
-	if m.value != "" {
-		if hint, valid := m.validate(m.value); hint != "" {
-			color := colorYellow
-			if !valid {
-				color = colorRed
-			}
-			fmt.Fprintf(&b, "%s\n", paint(color, hint))
-		}
-	}
-
-	return b.String()
+	return Input{Value: value}, nil
 }
