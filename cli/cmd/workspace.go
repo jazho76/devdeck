@@ -57,9 +57,9 @@ var workspaceSavePopupCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		saved := make(map[string]time.Time, len(existing))
+		saved := make(map[string]bool, len(existing))
 		for _, w := range existing {
-			saved[w.Slug] = w.UpdatedAt
+			saved[w.Slug] = true
 		}
 
 		validate := func(name string) (string, bool) {
@@ -70,8 +70,8 @@ var workspaceSavePopupCmd = &cobra.Command{
 			if slug == "" {
 				return "name has no usable characters", false
 			}
-			if t, ok := saved[slug]; ok {
-				return fmt.Sprintf("overwrites existing (saved %s)", t.Local().Format("2006-01-02")), true
+			if saved[slug] {
+				return "overwrites existing", true
 			}
 			return "", true
 		}
