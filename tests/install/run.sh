@@ -53,6 +53,9 @@ staged_src=/tmp/devdeck-src
     git config --global --add safe.directory "$mount"
     mkdir -p "$staged"
     git -C "$mount" ls-files -z --cached --others --exclude-standard \
+      | while IFS= read -r -d "" path; do
+          [[ -e "$mount/$path" ]] && printf "%s\0" "$path"
+        done \
       | tar -C "$mount" --null -T - -cf - \
       | tar -C "$staged" -xf -
     exec bash "$staged/tests/install/scenarios/$scenario.sh"

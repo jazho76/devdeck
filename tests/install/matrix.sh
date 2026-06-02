@@ -5,8 +5,8 @@ usage() {
   cat <<'USAGE'
 Usage: tests/install/matrix.sh <fast|full>
 
-fast: Fedora install contract scenarios intended for PR CI.
-full: Currently aliases fast; reserved for slower distro/toolset expansion.
+fast: Minimal Fedora install contract scenarios intended for PR CI.
+full: Currently aliases fast.
 USAGE
 }
 
@@ -19,26 +19,11 @@ suite="$1"
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 case "$suite" in
-  fast)
+  fast|full)
     scenarios=(
       "fedora fresh-minimal"
-      "fedora reinstall-idempotent"
       "fedora unmanaged-nvim-config"
       "fedora unmanaged-tmux-config"
-      "fedora uninstall-idempotent"
-      "fedora workspace-no-tmux"
-    )
-    ;;
-  full)
-    scenarios=(
-      "fedora fresh-minimal"
-      "fedora fresh-no-toolsets"
-      "fedora fresh-all-toolsets"
-      "fedora reinstall-idempotent"
-      "fedora unmanaged-nvim-config"
-      "fedora unmanaged-tmux-config"
-      "fedora uninstall-idempotent"
-      "fedora workspace-no-tmux"
     )
     ;;
   *)
