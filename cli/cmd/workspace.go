@@ -13,9 +13,10 @@ import (
 )
 
 var workspaceCmd = &cobra.Command{
-	Use:   "workspace",
-	Short: "Manage saved tmux workspaces",
-	Args:  cobra.NoArgs,
+	Use:     "workspace",
+	Aliases: []string{"ws"},
+	Short:   "Manage saved tmux workspaces",
+	Args:    cobra.NoArgs,
 }
 
 var workspaceSaveCmd = &cobra.Command{
