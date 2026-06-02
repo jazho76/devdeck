@@ -11,7 +11,7 @@ type Selection struct {
 	Cancelled bool
 }
 
-func MultiSelect(prompt string, items []string, selected map[string]bool) (Selection, error) {
+func MultiSelect(prompt string, items []string, selected map[string]bool, opts ...Option) (Selection, error) {
 	options := make([]huh.Option[string], len(items))
 	values := make([]string, 0, len(items))
 	for i, item := range items {
@@ -27,7 +27,7 @@ func MultiSelect(prompt string, items []string, selected map[string]bool) (Selec
 		Filterable(true).
 		Value(&values)
 
-	err := sizedForm(field).Run()
+	err := sizedForm(field, opts...).Run()
 	if errors.Is(err, huh.ErrUserAborted) {
 		return Selection{Cancelled: true}, nil
 	}

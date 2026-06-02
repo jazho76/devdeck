@@ -76,7 +76,7 @@ var workspaceSavePopupCmd = &cobra.Command{
 			return "", true
 		}
 
-		res, err := ui.Prompt("Save workspace", workspace.CurrentSession(), validate)
+		res, err := ui.Prompt("Save workspace", workspace.CurrentSession(), validate, ui.FillHeight())
 		if err != nil {
 			return err
 		}
@@ -123,7 +123,7 @@ var workspaceRestorePopupCmd = &cobra.Command{
 			return err
 		}
 		if len(saved) == 0 {
-			return ui.Notice("Restore workspace", "No saved workspaces yet")
+			return ui.Notice("Restore workspace", "No saved workspaces yet", ui.FillHeight())
 		}
 		sort.Slice(saved, func(i, j int) bool {
 			ti, _ := workspace.LastActivity(saved[i])
@@ -133,7 +133,7 @@ var workspaceRestorePopupCmd = &cobra.Command{
 
 		labels := workspace.RestoreLabels(saved, time.Now())
 
-		choice, err := ui.SingleSelect("Restore workspace", labels)
+		choice, err := ui.SingleSelect("Restore workspace", labels, ui.FillHeight())
 		if err != nil {
 			return err
 		}

@@ -11,7 +11,7 @@ type Choice struct {
 	Cancelled bool
 }
 
-func SingleSelect(prompt string, items []string) (Choice, error) {
+func SingleSelect(prompt string, items []string, opts ...Option) (Choice, error) {
 	options := make([]huh.Option[int], len(items))
 	for i, label := range items {
 		options[i] = huh.NewOption(label, i)
@@ -23,7 +23,7 @@ func SingleSelect(prompt string, items []string) (Choice, error) {
 		Options(options...).
 		Value(&index)
 
-	err := sizedForm(field).Run()
+	err := sizedForm(field, opts...).Run()
 	if errors.Is(err, huh.ErrUserAborted) {
 		return Choice{Cancelled: true}, nil
 	}

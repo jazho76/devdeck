@@ -11,7 +11,7 @@ type Input struct {
 	Cancelled bool
 }
 
-func Prompt(prompt, initial string, validate func(string) (hint string, ok bool)) (Input, error) {
+func Prompt(prompt, initial string, validate func(string) (hint string, ok bool), opts ...Option) (Input, error) {
 	value := initial
 
 	field := huh.NewInput().
@@ -30,7 +30,7 @@ func Prompt(prompt, initial string, validate func(string) (hint string, ok bool)
 			return ""
 		}, &value)
 
-	err := sizedForm(field).Run()
+	err := sizedForm(field, opts...).Run()
 	if errors.Is(err, huh.ErrUserAborted) {
 		return Input{Cancelled: true}, nil
 	}

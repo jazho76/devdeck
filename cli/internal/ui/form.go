@@ -7,7 +7,22 @@ import (
 	"github.com/charmbracelet/x/term"
 )
 
-func sizedForm(field huh.Field) *huh.Form {
+type Option func(*formConfig)
+
+type formConfig struct {
+	fillHeight bool
+}
+
+func FillHeight() Option {
+	return func(c *formConfig) { c.fillHeight = true }
+}
+
+func sizedForm(field huh.Field, opts ...Option) *huh.Form {
+	var cfg formConfig
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+
 	form := huh.NewForm(huh.NewGroup(field)).
 		WithTheme(formTheme()).
 		WithKeyMap(formKeyMap())
@@ -15,7 +30,7 @@ func sizedForm(field huh.Field) *huh.Form {
 		if w > 0 {
 			form = form.WithWidth(w)
 		}
-		if h > 1 {
+		if cfg.fillHeight && h > 1 {
 			form = form.WithHeight(h - 1)
 		}
 	}
