@@ -141,10 +141,99 @@ var workspaceRestorePopupCmd = &cobra.Command{
 	},
 }
 
+var workspaceListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List saved workspaces",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		p, err := paths.Resolve()
+		if err != nil {
+			return err
+		}
+		saved, err := workspace.List(p)
+		if err != nil {
+			return err
+		}
+		if len(saved) == 0 {
+			ui.Info("No saved workspaces")
+			return nil
+		}
+		sort.Slice(saved, func(i, j int) bool {
+			ti, _ := workspace.LastActivity(saved[i])
+			tj, _ := workspace.LastActivity(saved[j])
+			return ti.After(tj)
+		})
+		for _, label := range workspace.RestoreLabels(saved, time.Now()) {
+			fmt.Println(label)
+		}
+		return nil
+	},
+}
+
+var workspaceDeleteForce bool
+
+var workspaceDeleteCmd = &cobra.Command{
+	Use:     "delete <name>",
+	Aliases: []string{"rm"},
+	Short:   "Delete a saved workspace",
+	Args:    cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		p, err := paths.Resolve()
+		if err != nil {
+			return err
+		}
+		ws, err := workspace.Load(p, args[0])
+		if err != nil {
+			return err
+		}
+
+		if !workspaceDeleteForce {
+			if !isInteractive() {
+				return errors.New("refusing to delete without confirmation; pass --force")
+			}
+			choice, err := ui.SingleSelect(fmt.Sprintf("Delete workspace %q?", ws.Name), []string{"No", "Yes"})
+			if err != nil {
+				return err
+			}
+			if choice.Cancelled || choice.Index != 1 {
+				return nil
+			}
+		}
+
+		if err := workspace.Delete(p, ws.Slug); err != nil {
+			return err
+		}
+		ui.Info("Workspace deleted: %s", ws.Name)
+		return nil
+	},
+}
+
+var workspaceRenameCmd = &cobra.Command{
+	Use:   "rename <old> <new>",
+	Short: "Rename a saved workspace",
+	Args:  cobra.ExactArgs(2),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		p, err := paths.Resolve()
+		if err != nil {
+			return err
+		}
+		ws, err := workspace.Rename(p, args[0], args[1])
+		if err != nil {
+			return err
+		}
+		ui.Info("Renamed to: %s", ws.Name)
+		return nil
+	},
+}
+
 func init() {
 	workspaceCmd.AddCommand(workspaceSaveCmd)
 	workspaceCmd.AddCommand(workspaceSavePopupCmd)
 	workspaceCmd.AddCommand(workspaceRestoreCmd)
 	workspaceCmd.AddCommand(workspaceRestorePopupCmd)
+	workspaceCmd.AddCommand(workspaceListCmd)
+	workspaceDeleteCmd.Flags().BoolVarP(&workspaceDeleteForce, "force", "f", false, "skip the confirmation prompt")
+	workspaceCmd.AddCommand(workspaceDeleteCmd)
+	workspaceCmd.AddCommand(workspaceRenameCmd)
 	rootCmd.AddCommand(workspaceCmd)
 }
