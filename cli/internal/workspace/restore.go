@@ -48,7 +48,10 @@ func Restore(p paths.Paths, name string) error {
 		return err
 	}
 	attached := os.Getenv("TMUX") != ""
-	existing := currentSessions()
+	existing := make(map[string]bool)
+	for _, s := range currentSessions() {
+		existing[s] = true
+	}
 	baseIdx := tmuxIndexOption("-gv", "base-index")
 	paneBaseIdx := tmuxIndexOption("-gwv", "pane-base-index")
 
@@ -77,7 +80,19 @@ func Restore(p paths.Paths, name string) error {
 		}
 	}
 
+	replacingCurrent := false
 	if attached {
+		if current, err := currentSession(); err == nil {
+			for _, s := range ws.Sessions {
+				if s.Name == current {
+					replacingCurrent = true
+					break
+				}
+			}
+		}
+	}
+
+	if replacingCurrent {
 		// Killing the session that hosts this process closes our pane and SIGHUPs us;
 		// ignore it so the kill/rename/switch below still finishes.
 		signal.Ignore(syscall.SIGHUP)
@@ -86,9 +101,12 @@ func Restore(p paths.Paths, name string) error {
 			return err
 		}
 	}
-	for _, s := range existing {
-		if err := tmuxRun("kill-session", "-t", s); err != nil {
-			ui.Warn("could not kill session %q: %v", s, err)
+	for _, s := range ws.Sessions {
+		if !existing[s.Name] {
+			continue
+		}
+		if err := tmuxRun("kill-session", "-t", s.Name); err != nil {
+			ui.Warn("could not kill session %q: %v", s.Name, err)
 		}
 	}
 	for i, s := range ws.Sessions {

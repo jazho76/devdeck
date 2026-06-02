@@ -2,6 +2,7 @@ package workspace
 
 import (
 	"os"
+	"strings"
 
 	"github.com/jazho76/devdeck/cli/internal/run"
 )
@@ -20,6 +21,22 @@ func tmuxRun(args ...string) error {
 
 func tmuxStream(args ...string) error {
 	return run.Stream("tmux", append([]string{"-u"}, args...)...)
+}
+
+func currentSession() (string, error) {
+	out, err := tmuxQuery("display-message", "-p", "#{session_name}")
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(out), nil
+}
+
+func CurrentSession() string {
+	name, err := currentSession()
+	if err != nil {
+		return ""
+	}
+	return name
 }
 
 func Notify(msg string) {

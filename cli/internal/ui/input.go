@@ -11,8 +11,8 @@ type Input struct {
 	Cancelled bool
 }
 
-func Prompt(prompt string, validate func(string) (hint string, ok bool)) (Input, error) {
-	var value string
+func Prompt(prompt, initial string, validate func(string) (hint string, ok bool)) (Input, error) {
+	value := initial
 
 	field := huh.NewInput().
 		Title(prompt).

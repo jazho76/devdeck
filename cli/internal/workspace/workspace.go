@@ -73,6 +73,13 @@ func ValidateName(name string) error {
 }
 
 func Save(p paths.Paths, name string) error {
+	if strings.TrimSpace(name) == "" {
+		session, err := currentSession()
+		if err != nil {
+			return fmt.Errorf("could not determine current session; is tmux running? %w", err)
+		}
+		name = session
+	}
 	if err := ValidateName(name); err != nil {
 		return err
 	}
@@ -84,6 +91,9 @@ func Save(p paths.Paths, name string) error {
 	version, sessions, err := capture()
 	if err != nil {
 		return err
+	}
+	if len(sessions) > 0 {
+		sessions[0].Name = slug
 	}
 
 	now := time.Now().UTC()

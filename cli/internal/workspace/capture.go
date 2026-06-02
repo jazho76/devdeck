@@ -27,9 +27,14 @@ func capture() (version string, sessions []Session, err error) {
 		"#{window_zoomed_flag}",
 	}, sep)
 
-	out, err := tmuxQuery("list-panes", "-a", "-F", format)
+	session, err := currentSession()
 	if err != nil {
-		return "", nil, fmt.Errorf("could not read tmux server; is tmux running? %w", err)
+		return "", nil, fmt.Errorf("could not read tmux session; is tmux running? %w", err)
+	}
+
+	out, err := tmuxQuery("list-panes", "-s", "-t", session, "-F", format)
+	if err != nil {
+		return "", nil, fmt.Errorf("could not read tmux session; is tmux running? %w", err)
 	}
 	out = strings.TrimRight(out, "\n")
 	if out == "" {

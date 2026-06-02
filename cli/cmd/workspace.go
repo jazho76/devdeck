@@ -19,18 +19,22 @@ var workspaceCmd = &cobra.Command{
 }
 
 var workspaceSaveCmd = &cobra.Command{
-	Use:   "save <name>",
-	Short: "Save the current tmux layout as a workspace",
-	Args:  cobra.ExactArgs(1),
+	Use:   "save [name]",
+	Short: "Save the current tmux session as a workspace",
+	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		p, err := paths.Resolve()
 		if err != nil {
 			return err
 		}
-		if err := workspace.Save(p, args[0]); err != nil {
+		name := workspace.CurrentSession()
+		if len(args) == 1 {
+			name = args[0]
+		}
+		if err := workspace.Save(p, name); err != nil {
 			return err
 		}
-		ui.Info("Workspace saved: %s", args[0])
+		ui.Info("Workspace saved: %s", name)
 		return nil
 	},
 }
@@ -72,7 +76,7 @@ var workspaceSavePopupCmd = &cobra.Command{
 			return "", true
 		}
 
-		res, err := ui.Prompt("Save workspace", validate)
+		res, err := ui.Prompt("Save workspace", workspace.CurrentSession(), validate)
 		if err != nil {
 			return err
 		}
