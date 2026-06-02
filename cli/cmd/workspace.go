@@ -123,7 +123,9 @@ var workspaceRestorePopupCmd = &cobra.Command{
 			return nil
 		}
 		sort.Slice(saved, func(i, j int) bool {
-			return saved[i].UpdatedAt.After(saved[j].UpdatedAt)
+			ti, _ := workspace.LastActivity(saved[i])
+			tj, _ := workspace.LastActivity(saved[j])
+			return ti.After(tj)
 		})
 
 		labels := workspace.RestoreLabels(saved, time.Now())

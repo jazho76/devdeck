@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/jazho76/devdeck/cli/internal/paths"
 	"github.com/jazho76/devdeck/cli/internal/ui"
@@ -94,6 +95,11 @@ func Restore(p paths.Paths, name string) error {
 		if err := tmuxRun("rename-session", "-t", temps[i], s.Name); err != nil {
 			return err
 		}
+	}
+
+	ws.LastOpenedAt = time.Now().UTC()
+	if err := writeWorkspace(p, ws); err != nil {
+		ui.Warn("could not record open time for %q: %v", ws.Slug, err)
 	}
 
 	ui.Info("Restored workspace: %s", ws.Name)

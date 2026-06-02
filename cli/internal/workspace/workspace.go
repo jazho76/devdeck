@@ -26,6 +26,7 @@ type Workspace struct {
 	Slug          string    `json:"slug"`
 	CreatedAt     time.Time `json:"createdAt"`
 	UpdatedAt     time.Time `json:"updatedAt"`
+	LastOpenedAt  time.Time `json:"lastOpenedAt"`
 	TmuxVersion   string    `json:"tmuxVersion"`
 	Sessions      []Session `json:"sessions"`
 }
@@ -87,8 +88,10 @@ func Save(p paths.Paths, name string) error {
 
 	now := time.Now().UTC()
 	createdAt := now
+	var lastOpenedAt time.Time
 	if existing, err := load(p.WorkspaceFile(slug)); err == nil {
 		createdAt = existing.CreatedAt
+		lastOpenedAt = existing.LastOpenedAt
 	} else if !errors.Is(err, os.ErrNotExist) {
 		ui.Warn("could not read existing workspace %q, overwriting: %v", slug, err)
 	}
@@ -99,10 +102,15 @@ func Save(p paths.Paths, name string) error {
 		Slug:          slug,
 		CreatedAt:     createdAt,
 		UpdatedAt:     now,
+		LastOpenedAt:  lastOpenedAt,
 		TmuxVersion:   version,
 		Sessions:      sessions,
 	}
 
+	return writeWorkspace(p, ws)
+}
+
+func writeWorkspace(p paths.Paths, ws Workspace) error {
 	data, err := json.MarshalIndent(ws, "", "  ")
 	if err != nil {
 		return err
@@ -110,7 +118,14 @@ func Save(p paths.Paths, name string) error {
 	if err := os.MkdirAll(p.Workspaces, 0o755); err != nil {
 		return err
 	}
-	return fsx.WriteFileAtomic(p.WorkspaceFile(slug), data, 0o644)
+	return fsx.WriteFileAtomic(p.WorkspaceFile(ws.Slug), data, 0o644)
+}
+
+func LastActivity(ws Workspace) (when time.Time, viaRestore bool) {
+	if ws.LastOpenedAt.After(ws.UpdatedAt) {
+		return ws.LastOpenedAt, true
+	}
+	return ws.UpdatedAt, false
 }
 
 func List(p paths.Paths) ([]Workspace, error) {

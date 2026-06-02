@@ -34,7 +34,13 @@ func formatRestoreLabel(w Workspace, nameWidth int, now time.Time) string {
 	if others > 0 {
 		parts = append(parts, sessionsSuffix(others))
 	}
-	parts = append(parts, humanizeSince(w.UpdatedAt, now))
+
+	when, viaRestore := LastActivity(w)
+	verb := "saved"
+	if viaRestore {
+		verb = "opened"
+	}
+	parts = append(parts, verb+" "+humanizeSince(when, now))
 
 	return fmt.Sprintf("%s   %s", padRight(w.Name, nameWidth), strings.Join(parts, " · "))
 }
