@@ -130,6 +130,45 @@ func TestRemoveSymlinkIfPointsTo(t *testing.T) {
 	})
 }
 
+func TestCopyTree(t *testing.T) {
+	src := t.TempDir()
+	mustWrite(t, filepath.Join(src, "top.txt"), "top", 0o644)
+	mustWrite(t, filepath.Join(src, "nested", "exec.sh"), "#!/bin/sh", 0o755)
+	mustWrite(t, filepath.Join(src, ".git", "config"), "secret", 0o644)
+
+	dst := filepath.Join(t.TempDir(), "out")
+	if err := CopyTree(src, dst, func(rel string) bool { return rel == ".git" }); err != nil {
+		t.Fatalf("CopyTree: %v", err)
+	}
+
+	if got, _ := os.ReadFile(filepath.Join(dst, "top.txt")); string(got) != "top" {
+		t.Fatalf("top.txt = %q, want %q", got, "top")
+	}
+
+	exec := filepath.Join(dst, "nested", "exec.sh")
+	info, err := os.Stat(exec)
+	if err != nil {
+		t.Fatalf("stat exec.sh: %v", err)
+	}
+	if info.Mode().Perm() != 0o755 {
+		t.Fatalf("exec.sh mode = %o, want 0755", info.Mode().Perm())
+	}
+
+	if _, err := os.Stat(filepath.Join(dst, ".git")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf(".git was copied: %v", err)
+	}
+}
+
+func mustWrite(t *testing.T, path, content string, perm os.FileMode) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(content), perm); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestRemoveDirIfExists(t *testing.T) {
 	t.Run("removes present dir", func(t *testing.T) {
 		sub := filepath.Join(t.TempDir(), "sub")

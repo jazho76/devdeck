@@ -8,7 +8,7 @@ fi
 
 cat <<'USAGE'
 
-  devdeck sandbox (ready) - disposable Fedora box with core prereqs baked in.
+  devdeck sandbox - disposable Fedora box with core prereqs baked in.
   `devdeck install --all` runs automatically on first start; the locally-built
   `devdeck` binary is mounted at ~/.local/bin.
 

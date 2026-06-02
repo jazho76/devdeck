@@ -3,6 +3,7 @@ package fsx
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -97,6 +98,54 @@ func WriteFileAtomic(path string, data []byte, perm os.FileMode) error {
 		return err
 	}
 	return os.Rename(tmp.Name(), path)
+}
+
+func CopyTree(src, dst string, skip func(rel string) bool) error {
+	return filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		rel, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+		if skip != nil && skip(rel) {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		target := filepath.Join(dst, rel)
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+
+		if d.IsDir() {
+			return os.MkdirAll(target, info.Mode().Perm())
+		}
+		return copyFile(path, target, info.Mode().Perm())
+	})
+}
+
+func copyFile(src, dst string, perm os.FileMode) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
+	if err != nil {
+		return err
+	}
+	if _, err := io.Copy(out, in); err != nil {
+		out.Close()
+		return err
+	}
+	return out.Close()
 }
 
 func RemoveDirIfExists(path string) (bool, error) {

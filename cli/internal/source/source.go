@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/jazho76/devdeck/cli/internal/fsx"
 	"github.com/jazho76/devdeck/cli/internal/paths"
 	"github.com/jazho76/devdeck/cli/internal/run"
 	"github.com/jazho76/devdeck/cli/internal/sysreq"
@@ -16,9 +17,17 @@ import (
 const (
 	URL    = "https://github.com/jazho76/devdeck"
 	Branch = "main"
+
+	// OverrideEnv names a local directory to copy as the managed source instead
+	// of cloning from URL. Used by the sandbox to test the local working tree.
+	OverrideEnv = "DEVDECK_SOURCE"
 )
 
 func EnsureClone(p paths.Paths) error {
+	if override := os.Getenv(OverrideEnv); override != "" {
+		return ensureFromLocal(p, override)
+	}
+
 	if err := sysreq.RequireCommand("git"); err != nil {
 		return err
 	}
@@ -39,7 +48,32 @@ func EnsureClone(p paths.Paths) error {
 	}
 }
 
+func ensureFromLocal(p paths.Paths, override string) error {
+	if fi, err := os.Stat(override); err != nil || !fi.IsDir() {
+		return fmt.Errorf("%s %q is not a directory", OverrideEnv, override)
+	}
+
+	switch _, err := os.Stat(p.Source); {
+	case err == nil:
+		ui.Info("Using existing source at %s (%s set; not re-copying)", p.Source, OverrideEnv)
+		return nil
+	case errors.Is(err, fs.ErrNotExist):
+		ui.Info("Copying source from %s into %s", override, p.Source)
+		if err := os.MkdirAll(filepath.Dir(p.Source), 0o755); err != nil {
+			return err
+		}
+		return fsx.CopyTree(override, p.Source, func(rel string) bool { return rel == ".git" })
+	default:
+		return err
+	}
+}
+
 func Pull(p paths.Paths) error {
+	if override := os.Getenv(OverrideEnv); override != "" {
+		ui.Warn("%s set; skipping source update", OverrideEnv)
+		return nil
+	}
+
 	ui.Info("Updating source")
 	if err := run.Stream("git", "-C", p.Source, "pull", "--ff-only"); err != nil {
 		return fmt.Errorf("%w\nmanaged source could not fast-forward; remove %s and re-run devdeck install", err, p.Source)
