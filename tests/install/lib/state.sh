@@ -24,7 +24,7 @@ assert_tmux_config_link() {
 assert_tpm_installed() {
   assert_dir "$HOME/.local/share/tmux/plugins/tpm"
   assert_executable "$HOME/.local/share/tmux/plugins/tpm/bin/install_plugins"
-  assert_not_exists "$HOME/.config/tmux/plugins/tpm"
+  assert_contains "$HOME/.config/tmux/tmux.conf" 'TMUX_PLUGIN_MANAGER_PATH "$HOME/.local/share/tmux/plugins/"'
 }
 
 assert_nvim_config_link() {

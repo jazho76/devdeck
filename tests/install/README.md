@@ -26,7 +26,7 @@ The scenario scripts assert that Devdeck:
 - installs the CLI from the current mounted source tree
 - uses `DEVDECK_SOURCE=/opt/devdeck-src` instead of cloning GitHub `main`
 - links tmux and Neovim config to Devdeck-managed source
-- keeps TPM under `~/.local/share/tmux/plugins/tpm`
+- keeps TPM under `~/.local/share/tmux/plugins/tpm` and configures `TMUX_PLUGIN_MANAGER_PATH` accordingly
 - preserves unmanaged user config by failing closed
 - keeps Neovim runtime state on uninstall unless `--purge` is used
 - exposes the workspace command and `ws` alias
