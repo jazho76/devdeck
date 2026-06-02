@@ -9,7 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var installAll bool
+var (
+	installToolsets toolsetSelection
+	installSkipLazy bool
+)
 
 var installCmd = &cobra.Command{
 	Use:   "install",
@@ -32,12 +35,12 @@ var installCmd = &cobra.Command{
 		}
 
 		ui.Step("Configuring toolsets")
-		if err := configureToolsets(p, installAll); err != nil {
+		if err := configureToolsets(p, installToolsets); err != nil {
 			return err
 		}
 
 		ui.Step("Installing Neovim")
-		if err := nvim.Install(p); err != nil {
+		if err := nvim.Install(p, installSkipLazy); err != nil {
 			return err
 		}
 
@@ -46,6 +49,7 @@ var installCmd = &cobra.Command{
 }
 
 func init() {
-	installCmd.Flags().BoolVar(&installAll, "all", false, "enable every toolset, non-interactively")
+	addToolsetFlags(installCmd, &installToolsets)
+	installCmd.Flags().BoolVar(&installSkipLazy, "skip-lazy-install", false, "skip the headless ':Lazy! install' step")
 	rootCmd.AddCommand(installCmd)
 }

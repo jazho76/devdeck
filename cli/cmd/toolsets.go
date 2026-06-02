@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var toolsetsAll bool
+var toolsetsSelection toolsetSelection
 
 var toolsetsCmd = &cobra.Command{
 	Use:   "toolsets",
@@ -16,11 +16,11 @@ var toolsetsCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return configureToolsets(p, toolsetsAll)
+		return configureToolsets(p, toolsetsSelection)
 	},
 }
 
 func init() {
-	toolsetsCmd.Flags().BoolVar(&toolsetsAll, "all", false, "enable every toolset, non-interactively")
+	addToolsetFlags(toolsetsCmd, &toolsetsSelection)
 	rootCmd.AddCommand(toolsetsCmd)
 }

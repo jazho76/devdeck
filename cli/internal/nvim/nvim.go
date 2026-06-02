@@ -31,7 +31,7 @@ var httpClient = &http.Client{
 	},
 }
 
-func Install(p paths.Paths) error {
+func Install(p paths.Paths, skipLazyInstall bool) error {
 	if _, err := os.Stat(p.SourceNvimInit()); err != nil {
 		return fmt.Errorf("neovim config not found: %s", p.SourceNvimInit())
 	}
@@ -48,7 +48,11 @@ func Install(p paths.Paths) error {
 	}
 	ui.Info("Linked Neovim config")
 
-	runHeadless(p, "+Lazy! install")
+	if skipLazyInstall {
+		ui.Info("Skipped ':Lazy! install'")
+	} else {
+		runHeadless(p, "+Lazy! install")
+	}
 
 	ui.Info("Done")
 	return nil
