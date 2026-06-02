@@ -19,8 +19,6 @@ const (
 	tpmURL          = "https://github.com/tmux-plugins/tpm"
 )
 
-var ErrInsideTmux = errors.New("cannot run inside an existing tmux session; exit tmux and try again")
-
 func Install(p paths.Paths) error {
 	if err := sysreq.RequireCommand("git"); err != nil {
 		return err
@@ -30,9 +28,6 @@ func Install(p paths.Paths) error {
 	}
 	if err := sysreq.RequireCommand("tmux"); err != nil {
 		return errors.New("tmux is not installed; install it with your package manager, then try again")
-	}
-	if os.Getenv("TMUX") != "" {
-		return ErrInsideTmux
 	}
 
 	if v, err := installedVersion(); err == nil && v != ExpectedVersion {
@@ -47,12 +42,28 @@ func Install(p paths.Paths) error {
 	if err := ensureTPM(p); err != nil {
 		return err
 	}
+	reloadLiveConfig(p)
 	if err := run.Stream(filepath.Join(p.TPMDir(), "bin", "install_plugins")); err != nil {
 		return err
 	}
 
-	ui.Info("Done. Start tmux with: tmux")
+	if reloadLiveConfig(p) {
+		ui.Info("Done. Reloaded the running session with the new plugins.")
+	} else {
+		ui.Info("Done. Start tmux with: tmux")
+	}
 	return nil
+}
+
+func reloadLiveConfig(p paths.Paths) bool {
+	if os.Getenv("TMUX") == "" {
+		return false
+	}
+	if _, err := run.Query("tmux", "source-file", p.SourceTmuxConf()); err != nil {
+		ui.Warn("could not reload tmux config into the running session: %v", err)
+		return false
+	}
+	return true
 }
 
 func Update(p paths.Paths) error {
