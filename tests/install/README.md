@@ -1,6 +1,6 @@
 # Devdeck install contract tests
 
-These tests run Devdeck inside disposable containers and inspect the installed state from inside the container. They are intended to harden the installer/control-plane contract without touching a developer's real home directory.
+These tests run Devdeck inside a disposable Fedora 44 container and inspect the installed state from inside the container. They are intentionally small: one happy-path install plus fail-closed checks for existing user config.
 
 ## Run one scenario
 
@@ -8,27 +8,27 @@ These tests run Devdeck inside disposable containers and inspect the installed s
 tests/install/run.sh fedora fresh-minimal
 ```
 
-## Run the fast matrix
+## Run the matrix
 
 ```bash
 tests/install/matrix.sh fast
 ```
 
-## Current scenario groups
+`full` currently aliases `fast` until there is a concrete slower scenario worth carrying.
 
-- `fast`: Fedora 44 scenarios suitable for pull-request CI.
-- `full`: Fedora 44 scenarios that include all/no-toolset variants. This is reserved for slower expansion such as Ubuntu and workspace restore coverage.
+## Current scenarios
+
+- `fresh-minimal`: installs from the current staged source as a non-root user with minimal toolsets and Lazy bootstrap disabled.
+- `unmanaged-nvim-config`: verifies install fails closed instead of overwriting an existing user Neovim config.
+- `unmanaged-tmux-config`: verifies install fails closed instead of overwriting an existing user tmux config.
 
 ## Contract under test
 
 The scenario scripts assert that Devdeck:
 
-- installs the CLI from the current mounted source tree
-- uses `DEVDECK_SOURCE=/opt/devdeck-src` instead of cloning GitHub `main`
+- installs the CLI from the current staged source tree
 - links tmux and Neovim config to Devdeck-managed source
 - keeps TPM under `~/.local/share/tmux/plugins/tpm`
 - preserves unmanaged user config by failing closed
-- keeps Neovim runtime state on uninstall unless `--purge` is used
-- exposes the workspace command and `ws` alias
 
-Each scenario owns a fresh `HOME` and pins all XDG paths. Keep scenarios small and outcome-based.
+Each scenario owns a fresh `HOME` and pins all XDG paths. Keep this harness boring, small, and outcome-based.

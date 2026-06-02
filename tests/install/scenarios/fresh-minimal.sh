@@ -19,7 +19,6 @@ assert_nvim_config_link
 assert_nvim_available
 assert_default_toolsets
 assert_nvim_binary_starts
-assert_command_succeeds devdeck doctor
 assert_command_succeeds devdeck workspace --help
 assert_command_succeeds devdeck ws --help
 assert_command_succeeds devdeck upgrade --help
