@@ -118,7 +118,7 @@ func ensureBinary(p paths.Paths) error {
 }
 
 func reportInstalledVersion(label, bin, mismatchHint string) {
-	v, _ := nvimVersion(bin)
+	v, _ := Version(bin)
 	if v == NvimVersion {
 		ui.Info("Using %s", label)
 		return
@@ -261,7 +261,7 @@ func replaceLink(target string, link func() error) error {
 }
 
 func runHeadless(p paths.Paths, lazyCmd string) {
-	bin, ok := resolveNvimBin(p)
+	bin, ok := ResolveBin(p)
 	if !ok {
 		ui.Warn(`nvim not found on PATH; add ~/.local/bin to PATH, then run: nvim --headless "%s" "+qa"`, lazyCmd)
 		return
@@ -271,7 +271,7 @@ func runHeadless(p paths.Paths, lazyCmd string) {
 	}
 }
 
-func resolveNvimBin(p paths.Paths) (string, bool) {
+func ResolveBin(p paths.Paths) (string, bool) {
 	if bin, err := exec.LookPath("nvim"); err == nil {
 		return bin, true
 	}
@@ -292,7 +292,7 @@ func nvimArch() (string, error) {
 	}
 }
 
-func nvimVersion(bin string) (string, error) {
+func Version(bin string) (string, error) {
 	out, err := run.Output(bin, "--version")
 	if err != nil {
 		return "", err

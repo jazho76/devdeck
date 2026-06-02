@@ -30,7 +30,7 @@ func Install(p paths.Paths) error {
 		return errors.New("tmux is not installed; install it with your package manager, then try again")
 	}
 
-	if v, err := installedVersion(); err == nil && v != ExpectedVersion {
+	if v, err := Version(); err == nil && v != ExpectedVersion {
 		ui.Warn("tmux version is %s, expected %s; continuing without modifying the binary", v, ExpectedVersion)
 	}
 
@@ -126,7 +126,7 @@ func ensureTPM(p paths.Paths) error {
 	return run.Stream("git", "clone", tpmURL, tpm)
 }
 
-func installedVersion() (string, error) {
+func Version() (string, error) {
 	out, err := run.Output("tmux", "-V")
 	if err != nil {
 		return "", err

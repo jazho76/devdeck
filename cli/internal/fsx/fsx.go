@@ -38,6 +38,7 @@ const (
 	Removed
 	KeptUnmanaged
 	KeptNotSymlink
+	Match
 )
 
 func Describe(o Outcome, link string) string {
@@ -53,7 +54,7 @@ func Describe(o Outcome, link string) string {
 	}
 }
 
-func RemoveSymlinkIfPointsTo(link, expected string) (Outcome, error) {
+func InspectSymlink(link, expected string) (Outcome, error) {
 	info, err := os.Lstat(link)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
@@ -72,6 +73,14 @@ func RemoveSymlinkIfPointsTo(link, expected string) (Outcome, error) {
 	}
 	if filepath.Clean(dest) != filepath.Clean(expected) {
 		return KeptUnmanaged, nil
+	}
+	return Match, nil
+}
+
+func RemoveSymlinkIfPointsTo(link, expected string) (Outcome, error) {
+	outcome, err := InspectSymlink(link, expected)
+	if err != nil || outcome != Match {
+		return outcome, err
 	}
 
 	if err := os.Remove(link); err != nil {
