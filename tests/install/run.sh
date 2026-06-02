@@ -38,12 +38,22 @@ fi
 [[ -f "$scenario_file" ]] || { echo "No scenario: $scenario_file" >&2; exit 1; }
 
 image_tag="devdeck-install-test:$image"
+mount_src=/opt/devdeck-src
+staged_src=/tmp/devdeck-src
 
 "$engine" build -t "$image_tag" -f "$containerfile" "$repo_root/tests/install/images"
 "$engine" run --rm \
   --name "devdeck-install-${image}-${scenario}" \
-  -v "$repo_root:/opt/devdeck-src:ro" \
-  -e DEVDECK_SOURCE=/opt/devdeck-src \
+  -v "$repo_root:$mount_src:ro" \
+  -e DEVDECK_SOURCE="$staged_src" \
   -e DEVDECK_TEST_HOME=/home/devdeck-test \
   "$image_tag" \
-  bash "/opt/devdeck-src/tests/install/scenarios/$scenario.sh"
+  bash -euo pipefail -c '
+    mount="$1"; staged="$2"; scenario="$3"
+    git config --global --add safe.directory "$mount"
+    mkdir -p "$staged"
+    git -C "$mount" ls-files -z --cached --others --exclude-standard \
+      | tar -C "$mount" --null -T - -cf - \
+      | tar -C "$staged" -xf -
+    exec bash "$staged/tests/install/scenarios/$scenario.sh"
+  ' _ "$mount_src" "$staged_src" "$scenario"
