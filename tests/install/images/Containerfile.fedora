@@ -1,0 +1,29 @@
+FROM fedora:44
+
+RUN dnf install -y \
+    bash \
+    ca-certificates \
+    curl \
+    fd-find \
+    gcc \
+    gcc-c++ \
+    git \
+    go \
+    gzip \
+    make \
+    neovim \
+    nodejs \
+    npm \
+    procps-ng \
+    ripgrep \
+    tar \
+    tmux \
+    tree-sitter-cli \
+    unzip \
+  && dnf clean all
+
+RUN useradd -m -s /bin/bash devdeck-test
+
+USER devdeck-test
+
+WORKDIR /opt/devdeck-src

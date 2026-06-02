@@ -1,0 +1,28 @@
+name: Install contract
+
+on:
+  pull_request:
+    paths:
+      - 'cli/**'
+      - 'nvim/**'
+      - 'tmux/**'
+      - 'tests/install/**'
+      - '.github/workflows/install-contract.yaml'
+  push:
+    paths:
+      - 'cli/**'
+      - 'nvim/**'
+      - 'tmux/**'
+      - 'tests/install/**'
+      - '.github/workflows/install-contract.yaml'
+
+permissions:
+  contents: read
+
+jobs:
+  fedora-fast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Fedora install contract tests
+        run: tests/install/matrix.sh fast
