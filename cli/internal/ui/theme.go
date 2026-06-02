@@ -85,7 +85,7 @@ func formKeyMap() *huh.KeyMap {
 	km.Quit.SetHelp("esc", "cancel")
 	km.MultiSelect.SelectAll.SetKeys("a")
 	km.MultiSelect.SelectAll.SetHelp("a", "select all")
-	km.MultiSelect.SelectNone.SetKeys("n")
-	km.MultiSelect.SelectNone.SetHelp("n", "select none")
+	km.MultiSelect.SelectNone.SetKeys("a")
+	km.MultiSelect.SelectNone.SetHelp("a", "select none")
 	return km
 }
