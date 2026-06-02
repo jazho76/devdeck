@@ -126,10 +126,7 @@ var workspaceRestorePopupCmd = &cobra.Command{
 			return saved[i].UpdatedAt.After(saved[j].UpdatedAt)
 		})
 
-		labels := make([]string, len(saved))
-		for i, w := range saved {
-			labels[i] = fmt.Sprintf("%s  (saved %s)", w.Name, w.UpdatedAt.Local().Format("2006-01-02"))
-		}
+		labels := workspace.RestoreLabels(saved, time.Now())
 
 		choice, err := ui.SingleSelect("Restore workspace", labels)
 		if err != nil {
