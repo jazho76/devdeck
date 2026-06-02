@@ -123,8 +123,7 @@ var workspaceRestorePopupCmd = &cobra.Command{
 			return err
 		}
 		if len(saved) == 0 {
-			workspace.Notify("No saved workspaces")
-			return nil
+			return ui.Notice("Restore workspace", "No saved workspaces yet")
 		}
 		sort.Slice(saved, func(i, j int) bool {
 			ti, _ := workspace.LastActivity(saved[i])
@@ -195,11 +194,7 @@ var workspaceDeleteCmd = &cobra.Command{
 			if !isInteractive() {
 				return errors.New("refusing to delete without confirmation; pass --force")
 			}
-			choice, err := ui.SingleSelect(fmt.Sprintf("Delete workspace %q?", ws.Name), []string{"No", "Yes"})
-			if err != nil {
-				return err
-			}
-			if choice.Cancelled || choice.Index != 1 {
+			if !ui.Confirm(fmt.Sprintf("Delete workspace %q?", ws.Name)) {
 				return nil
 			}
 		}
