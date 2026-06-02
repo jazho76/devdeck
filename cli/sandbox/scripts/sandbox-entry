@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
+install -m 0755 /opt/devdeck-bin "$HOME/.local/bin/devdeck"
+
 if [ ! -d "$HOME/.local/share/devdeck/source" ]; then
   echo "Installing devdeck..."
   devdeck install --all || echo "devdeck install failed"
@@ -9,9 +11,6 @@ fi
 cat <<'USAGE'
 
   devdeck sandbox - disposable Fedora box with core prereqs baked in.
-  `devdeck install --all` runs automatically on first start; the locally-built
-  `devdeck` binary is mounted at ~/.local/bin.
-
   Exit the shell to destroy the container.
 
 USAGE

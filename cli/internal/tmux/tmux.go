@@ -74,7 +74,21 @@ func Update(p paths.Paths) error {
 	if err := run.Stream("git", "-C", p.TPMDir(), "pull", "--ff-only"); err != nil {
 		ui.Warn("could not update TPM: %v", err)
 	}
+
+	reloadLiveConfig(p)
+	runTPM(p, "install_plugins")
+	runTPM(p, "update_plugins", "all")
+	runTPM(p, "clean_plugins")
+	if reloadLiveConfig(p) {
+		ui.Info("Reloaded the running session with the updated plugins.")
+	}
 	return nil
+}
+
+func runTPM(p paths.Paths, script string, args ...string) {
+	if err := run.Stream(filepath.Join(p.TPMDir(), "bin", script), args...); err != nil {
+		ui.Warn("tmux %s failed: %v", script, err)
+	}
 }
 
 func Uninstall(p paths.Paths) error {

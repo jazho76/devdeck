@@ -45,7 +45,7 @@ image:
 
 run: dist image
 	setsid alacritty -e docker run --rm -it --name $(RUN_CONTAINER) \
-		-v "$(CURDIR)/bin/$(BINARY)-linux-amd64:/home/dev/.local/bin/devdeck:ro" \
+		-v "$(CURDIR)/bin/$(BINARY)-linux-amd64:/opt/devdeck-bin:ro" \
 		-v "$(REPO_ROOT):/opt/devdeck-src:ro" \
 		-e DEVDECK_SOURCE=/opt/devdeck-src \
 		$(RUN_IMAGE) >/dev/null 2>&1 &
