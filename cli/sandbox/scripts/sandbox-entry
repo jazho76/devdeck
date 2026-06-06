@@ -4,8 +4,8 @@ set -uo pipefail
 install -m 0755 /opt/devdeck-bin "$HOME/.local/bin/devdeck"
 
 if [ ! -d "$HOME/.local/share/devdeck/source" ]; then
-  # echo "Installing devdeck..."
-  # devdeck install --no-toolsets || echo "devdeck install failed"
+  echo "Installing devdeck..."
+  devdeck install --no-toolsets || echo "devdeck install failed"
 fi
 
 cat <<'USAGE'
