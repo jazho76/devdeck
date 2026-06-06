@@ -19,6 +19,10 @@ var updateCmd = &cobra.Command{
 			return err
 		}
 
+		if err := ensurePrereqs(); err != nil {
+			return err
+		}
+
 		ui.Step("Updating source")
 		if err := source.Pull(p); err != nil {
 			return err

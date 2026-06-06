@@ -3,7 +3,6 @@ package doctor
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/jazho76/devdeck/cli/internal/fsx"
@@ -11,6 +10,7 @@ import (
 	"github.com/jazho76/devdeck/cli/internal/paths"
 	"github.com/jazho76/devdeck/cli/internal/run"
 	"github.com/jazho76/devdeck/cli/internal/source"
+	"github.com/jazho76/devdeck/cli/internal/sysreq"
 	"github.com/jazho76/devdeck/cli/internal/tmux"
 )
 
@@ -34,8 +34,11 @@ func Run(p paths.Paths) []Result {
 	add := func(r Result) { results = append(results, r) }
 
 	add(checkLocalBinOnPath(p))
-	add(checkCommand("git", "required to clone and update devdeck", true))
-	add(checkCommand("tmux", "required to run the tmux environment", true))
+	for _, d := range sysreq.Catalog {
+		if d.Required {
+			add(checkDep(d))
+		}
+	}
 	add(checkTmuxVersion())
 	add(checkSource(p))
 	add(checkConfigLink("tmux config link", p.ConfigTmux, p.SourceTmux(), p.SourceTmuxConf()))
@@ -49,11 +52,30 @@ func Run(p paths.Paths) []Result {
 
 	add(checkToolsets(p))
 
-	for _, r := range checkOptionalTools() {
-		add(r)
+	for _, d := range sysreq.Catalog {
+		if !d.Required {
+			add(checkDep(d))
+		}
 	}
 
 	return results
+}
+
+func checkDep(d sysreq.Dep) Result {
+	r := Result{Name: d.Name}
+	if path, found := sysreq.Check(d); found {
+		r.Severity = OK
+		r.Detail = path
+		return r
+	}
+	r.Detail = "not found on PATH"
+	if d.Required {
+		r.Severity = Fail
+	} else {
+		r.Severity = Warn
+		r.Detail = "not found on PATH (optional)"
+	}
+	return r
 }
 
 func checkLocalBinOnPath(p paths.Paths) Result {
@@ -68,23 +90,6 @@ func checkLocalBinOnPath(p paths.Paths) Result {
 	r.Severity = Warn
 	r.Detail = p.LocalBin + " not on PATH"
 	r.Hint = "add " + p.LocalBin + " to PATH so the devdeck and nvim symlinks resolve"
-	return r
-}
-
-func checkCommand(name, purpose string, required bool) Result {
-	r := Result{Name: name}
-	if path, err := exec.LookPath(name); err == nil {
-		r.Severity = OK
-		r.Detail = path
-		return r
-	}
-	r.Detail = "not found on PATH"
-	r.Hint = purpose + "; install it with your package manager"
-	if required {
-		r.Severity = Fail
-	} else {
-		r.Severity = Warn
-	}
 	return r
 }
 
@@ -253,29 +258,6 @@ func checkToolsets(p paths.Paths) Result {
 		return r
 	}
 	r.Severity = OK
-	return r
-}
-
-func checkOptionalTools() []Result {
-	return []Result{
-		optionalCommand("make", "speeds up Telescope's native fuzzy sorter", "make"),
-		optionalCommand("fd", "speeds up file finding in Telescope", "fd", "fdfind"),
-		optionalCommand("wl-clipboard", "syncs the system clipboard on Wayland", "wl-copy"),
-	}
-}
-
-func optionalCommand(label, purpose string, names ...string) Result {
-	r := Result{Name: label}
-	for _, name := range names {
-		if path, err := exec.LookPath(name); err == nil {
-			r.Severity = OK
-			r.Detail = path
-			return r
-		}
-	}
-	r.Severity = Warn
-	r.Detail = "not found on PATH"
-	r.Hint = "optional: " + purpose
 	return r
 }
 

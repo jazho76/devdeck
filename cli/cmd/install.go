@@ -24,6 +24,10 @@ var installCmd = &cobra.Command{
 			return err
 		}
 
+		if err := ensurePrereqs(); err != nil {
+			return err
+		}
+
 		ui.Step("Fetching source")
 		if err := source.EnsureClone(p); err != nil {
 			return err

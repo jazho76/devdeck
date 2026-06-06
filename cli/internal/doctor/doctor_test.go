@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/jazho76/devdeck/cli/internal/paths"
+	"github.com/jazho76/devdeck/cli/internal/sysreq"
 )
 
 func healthyFixture(t *testing.T) paths.Paths {
@@ -126,6 +127,27 @@ func TestCheckToolsetsWarnsWhenMissing(t *testing.T) {
 	}
 	if got := checkToolsets(p); got.Severity != Warn {
 		t.Fatalf("severity = %v, want Warn", got.Severity)
+	}
+}
+
+func TestCheckDep(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("PATH", dir)
+	writeExecutable(t, filepath.Join(dir, "git"))
+
+	cases := []struct {
+		name string
+		dep  sysreq.Dep
+		want Severity
+	}{
+		{"present", sysreq.Dep{Name: "git", Binaries: []string{"git"}, Required: true}, OK},
+		{"required absent", sysreq.Dep{Name: "tmux", Binaries: []string{"tmux"}, Required: true}, Fail},
+		{"optional absent", sysreq.Dep{Name: "fd", Binaries: []string{"fd", "fdfind"}}, Warn},
+	}
+	for _, c := range cases {
+		if got := checkDep(c.dep); got.Severity != c.want {
+			t.Errorf("%s: severity = %v, want %v", c.name, got.Severity, c.want)
+		}
 	}
 }
 

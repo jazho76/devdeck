@@ -6,10 +6,23 @@ import (
 	"strings"
 
 	"github.com/jazho76/devdeck/cli/internal/paths"
+	"github.com/jazho76/devdeck/cli/internal/sysreq"
 	"github.com/jazho76/devdeck/cli/internal/toolsets"
 	"github.com/jazho76/devdeck/cli/internal/ui"
 	"github.com/spf13/cobra"
 )
+
+func ensurePrereqs() error {
+	missing := sysreq.Missing(true)
+	if len(missing) == 0 {
+		return nil
+	}
+	ui.Step("Checking prerequisites")
+	for _, d := range missing {
+		ui.StatusFail(d.Name, "not found on PATH")
+	}
+	return fmt.Errorf("%d required dependency(ies) missing; install them and re-run", len(missing))
+}
 
 type toolsetSelection struct {
 	all      bool
