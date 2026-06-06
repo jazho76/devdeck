@@ -8,7 +8,7 @@ import (
 )
 
 func Step(label string) {
-	fmt.Printf("\n%s\n", stepStyle.Render("==> "+label))
+	fmt.Printf("\n%s\n", stepStyle.Render(":: "+label))
 }
 
 func Info(format string, a ...any) {
