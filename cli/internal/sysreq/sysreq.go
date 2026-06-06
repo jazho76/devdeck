@@ -17,6 +17,9 @@ var Catalog = []Dep{
 	{Name: "git", Binaries: []string{"git"}, Required: true},
 	{Name: "tmux", Binaries: []string{"tmux"}, Required: true, MinVersion: "3.5a", VersionArgs: []string{"-V"}},
 	{Name: "make", Binaries: []string{"make"}},
+	{Name: "gcc", Binaries: []string{"cc", "gcc"}, Required: true},
+	{Name: "ripgrep", Binaries: []string{"rg"}, Required: true},
+	{Name: "tree-sitter-cli", Binaries: []string{"tree-sitter"}, Required: true},
 	{Name: "fd", Binaries: []string{"fd", "fdfind"}},
 	{Name: "wl-clipboard", Binaries: []string{"wl-copy"}},
 }
