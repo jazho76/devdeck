@@ -127,13 +127,13 @@ func reportInstalledVersion(label, bin, mismatchHint string) {
 }
 
 func downloadAndInstall(p paths.Paths) error {
-	arch, err := nvimArch()
+	target, err := nvimTarget()
 	if err != nil {
 		return err
 	}
 	url := fmt.Sprintf(
-		"https://github.com/neovim/neovim/releases/download/v%s/nvim-linux-%s.tar.gz",
-		NvimVersion, arch,
+		"https://github.com/neovim/neovim/releases/download/v%s/%s.tar.gz",
+		NvimVersion, target,
 	)
 
 	if err := os.MkdirAll(p.Share, 0o755); err != nil {
@@ -150,7 +150,7 @@ func downloadAndInstall(p paths.Paths) error {
 		return err
 	}
 
-	extracted := filepath.Join(tmp, "nvim-linux-"+arch)
+	extracted := filepath.Join(tmp, target)
 	if err := atomicSwap(extracted, p.NvimInstall); err != nil {
 		return err
 	}
@@ -279,6 +279,24 @@ func ResolveBin(p paths.Paths) (string, bool) {
 		return p.NvimBin, true
 	}
 	return "", false
+}
+
+func nvimTarget() (string, error) {
+	arch, err := nvimArch()
+	if err != nil {
+		return "", err
+	}
+	switch runtime.GOOS {
+	case "linux":
+		return "nvim-linux-" + arch, nil
+	case "darwin":
+		if runtime.GOARCH != "arm64" {
+			return "", fmt.Errorf("macOS support requires Apple Silicon (got %s)", runtime.GOARCH)
+		}
+		return "nvim-macos-" + arch, nil
+	default:
+		return "", fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
+	}
 }
 
 func nvimArch() (string, error) {
