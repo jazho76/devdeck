@@ -117,7 +117,11 @@ func TestUnsatisfiedReportsTooOld(t *testing.T) {
 func TestUnsatisfiedRequiredOnly(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
-	writeExecutable(t, dir, "git")
+	for _, d := range Catalog {
+		if d.Required {
+			writeExecutable(t, dir, d.Binaries[0])
+		}
+	}
 	writeScript(t, dir, "tmux", "#!/bin/sh\necho \"tmux 3.6b\"\n")
 
 	if got := Unsatisfied(true); len(got) != 0 {
