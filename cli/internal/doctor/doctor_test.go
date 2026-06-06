@@ -134,6 +134,7 @@ func TestCheckDep(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
 	writeExecutable(t, filepath.Join(dir, "git"))
+	writeScript(t, filepath.Join(dir, "tmux"), "#!/bin/sh\necho \"tmux 3.1\"\n")
 
 	cases := []struct {
 		name string
@@ -141,8 +142,9 @@ func TestCheckDep(t *testing.T) {
 		want Severity
 	}{
 		{"present", sysreq.Dep{Name: "git", Binaries: []string{"git"}, Required: true}, OK},
-		{"required absent", sysreq.Dep{Name: "tmux", Binaries: []string{"tmux"}, Required: true}, Fail},
+		{"required absent", sysreq.Dep{Name: "make", Binaries: []string{"make"}, Required: true}, Fail},
 		{"optional absent", sysreq.Dep{Name: "fd", Binaries: []string{"fd", "fdfind"}}, Warn},
+		{"too old", sysreq.Dep{Name: "tmux", Binaries: []string{"tmux"}, Required: true, MinVersion: "3.5a", VersionArgs: []string{"-V"}}, Fail},
 	}
 	for _, c := range cases {
 		if got := checkDep(c.dep); got.Severity != c.want {
@@ -163,10 +165,15 @@ func writeFile(t *testing.T, path, content string) {
 
 func writeExecutable(t *testing.T, path string) {
 	t.Helper()
+	writeScript(t, path, "#!/bin/sh\n")
+}
+
+func writeScript(t *testing.T, path, body string) {
+	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(path, []byte("#!/bin/sh\n"), 0o755); err != nil {
+	if err := os.WriteFile(path, []byte(body), 0o755); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/jazho76/devdeck/cli/internal/run"
 	"github.com/jazho76/devdeck/cli/internal/source"
 	"github.com/jazho76/devdeck/cli/internal/sysreq"
-	"github.com/jazho76/devdeck/cli/internal/tmux"
 )
 
 type Severity int
@@ -39,7 +38,6 @@ func Run(p paths.Paths) []Result {
 			add(checkDep(d))
 		}
 	}
-	add(checkTmuxVersion())
 	add(checkSource(p))
 	add(checkConfigLink("tmux config link", p.ConfigTmux, p.SourceTmux(), p.SourceTmuxConf()))
 	add(checkTPM(p))
@@ -63,17 +61,24 @@ func Run(p paths.Paths) []Result {
 
 func checkDep(d sysreq.Dep) Result {
 	r := Result{Name: d.Name}
-	if path, found := sysreq.Check(d); found {
+	switch res := sysreq.Inspect(d); res.Status {
+	case sysreq.Found:
 		r.Severity = OK
-		r.Detail = path
-		return r
-	}
-	r.Detail = "not found on PATH"
-	if d.Required {
+		r.Detail = res.Path
+		if res.Version != "" {
+			r.Detail = fmt.Sprintf("%s (%s)", res.Path, res.Version)
+		}
+	case sysreq.TooOld:
 		r.Severity = Fail
-	} else {
-		r.Severity = Warn
-		r.Detail = "not found on PATH (optional)"
+		r.Detail = fmt.Sprintf("%s, minimum %s", res.Version, d.MinVersion)
+	default:
+		if d.Required {
+			r.Severity = Fail
+			r.Detail = "not found on PATH"
+		} else {
+			r.Severity = Warn
+			r.Detail = "not found on PATH (optional)"
+		}
 	}
 	return r
 }
@@ -90,25 +95,6 @@ func checkLocalBinOnPath(p paths.Paths) Result {
 	r.Severity = Warn
 	r.Detail = p.LocalBin + " not on PATH"
 	r.Hint = "add " + p.LocalBin + " to PATH so the devdeck and nvim symlinks resolve"
-	return r
-}
-
-func checkTmuxVersion() Result {
-	r := Result{Name: "tmux version"}
-	v, err := tmux.Version()
-	if err != nil {
-		r.Severity = Warn
-		r.Detail = "could not determine tmux version"
-		return r
-	}
-	if v == tmux.ExpectedVersion {
-		r.Severity = OK
-		r.Detail = v
-		return r
-	}
-	r.Severity = Warn
-	r.Detail = fmt.Sprintf("%s, expected %s", v, tmux.ExpectedVersion)
-	r.Hint = "plugins are tested against tmux " + tmux.ExpectedVersion
 	return r
 }
 

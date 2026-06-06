@@ -3,20 +3,42 @@ package sysreq
 import (
 	"fmt"
 	"os/exec"
+	"regexp"
+	"strconv"
+	"strings"
+
+	"github.com/jazho76/devdeck/cli/internal/run"
 )
 
 type Dep struct {
-	Name     string
-	Binaries []string
-	Required bool
+	Name        string
+	Binaries    []string
+	Required    bool
+	MinVersion  string
+	VersionArgs []string
 }
 
 var Catalog = []Dep{
 	{Name: "git", Binaries: []string{"git"}, Required: true},
-	{Name: "tmux", Binaries: []string{"tmux"}, Required: true},
+	{Name: "tmux", Binaries: []string{"tmux"}, Required: true, MinVersion: "3.5a", VersionArgs: []string{"-V"}},
 	{Name: "make", Binaries: []string{"make"}},
 	{Name: "fd", Binaries: []string{"fd", "fdfind"}},
 	{Name: "wl-clipboard", Binaries: []string{"wl-copy"}},
+}
+
+type Status int
+
+const (
+	Found Status = iota
+	NotFound
+	TooOld
+)
+
+type Result struct {
+	Dep     Dep
+	Status  Status
+	Path    string
+	Version string
 }
 
 func Lookup(name string) (Dep, bool) {
@@ -37,17 +59,36 @@ func Check(d Dep) (string, bool) {
 	return "", false
 }
 
-func Missing(requiredOnly bool) []Dep {
-	var missing []Dep
+func Inspect(d Dep) Result {
+	path, found := Check(d)
+	if !found {
+		return Result{Dep: d, Status: NotFound}
+	}
+	if d.MinVersion == "" {
+		return Result{Dep: d, Status: Found, Path: path}
+	}
+
+	version, err := currentVersion(path, d.VersionArgs)
+	if err != nil || version == "" {
+		return Result{Dep: d, Status: Found, Path: path}
+	}
+	if !meetsMinimum(version, d.MinVersion) {
+		return Result{Dep: d, Status: TooOld, Path: path, Version: version}
+	}
+	return Result{Dep: d, Status: Found, Path: path, Version: version}
+}
+
+func Unsatisfied(requiredOnly bool) []Result {
+	var unsatisfied []Result
 	for _, d := range Catalog {
 		if requiredOnly && !d.Required {
 			continue
 		}
-		if _, found := Check(d); !found {
-			missing = append(missing, d)
+		if r := Inspect(d); r.Status != Found {
+			unsatisfied = append(unsatisfied, r)
 		}
 	}
-	return missing
+	return unsatisfied
 }
 
 func RequireCommand(name string) error {
@@ -59,4 +100,52 @@ func RequireCommand(name string) error {
 		return fmt.Errorf("missing required command: %s", d.Name)
 	}
 	return nil
+}
+
+var versionPattern = regexp.MustCompile(`\d+(\.\d+)*[a-z]?`)
+
+func currentVersion(path string, args []string) (string, error) {
+	out, err := run.Output(path, args...)
+	if err != nil {
+		return "", err
+	}
+	return versionPattern.FindString(out), nil
+}
+
+func meetsMinimum(current, min string) bool {
+	curNums, curSuffix := parseVersion(current)
+	minNums, minSuffix := parseVersion(min)
+
+	for i := 0; i < len(curNums) || i < len(minNums); i++ {
+		var c, m int
+		if i < len(curNums) {
+			c = curNums[i]
+		}
+		if i < len(minNums) {
+			m = minNums[i]
+		}
+		if c != m {
+			return c > m
+		}
+	}
+	return curSuffix >= minSuffix
+}
+
+func parseVersion(v string) ([]int, string) {
+	var suffix string
+	if n := len(v); n > 0 {
+		if last := v[n-1]; last >= 'a' && last <= 'z' {
+			suffix = string(last)
+			v = v[:n-1]
+		}
+	}
+	var nums []int
+	for _, part := range strings.Split(v, ".") {
+		n, err := strconv.Atoi(part)
+		if err != nil {
+			break
+		}
+		nums = append(nums, n)
+	}
+	return nums, suffix
 }

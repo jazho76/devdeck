@@ -13,15 +13,20 @@ import (
 )
 
 func ensurePrereqs() error {
-	missing := sysreq.Missing(true)
-	if len(missing) == 0 {
+	unsatisfied := sysreq.Unsatisfied(true)
+	if len(unsatisfied) == 0 {
 		return nil
 	}
 	ui.Step("Checking prerequisites")
-	for _, d := range missing {
-		ui.StatusFail(d.Name, "not found on PATH")
+	for _, r := range unsatisfied {
+		switch r.Status {
+		case sysreq.TooOld:
+			ui.StatusFail(r.Dep.Name, fmt.Sprintf("%s, minimum %s", r.Version, r.Dep.MinVersion))
+		default:
+			ui.StatusFail(r.Dep.Name, "not found on PATH")
+		}
 	}
-	return fmt.Errorf("%d required dependency(ies) missing; install them and re-run", len(missing))
+	return fmt.Errorf("%d required dependency(ies) unsatisfied; resolve them and re-run", len(unsatisfied))
 }
 
 type toolsetSelection struct {

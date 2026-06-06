@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/jazho76/devdeck/cli/internal/fsx"
 	"github.com/jazho76/devdeck/cli/internal/paths"
@@ -14,10 +13,7 @@ import (
 	"github.com/jazho76/devdeck/cli/internal/ui"
 )
 
-const (
-	ExpectedVersion = "3.5a"
-	tpmURL          = "https://github.com/tmux-plugins/tpm"
-)
+const tpmURL = "https://github.com/tmux-plugins/tpm"
 
 func Install(p paths.Paths) error {
 	if err := sysreq.RequireCommand("git"); err != nil {
@@ -28,10 +24,6 @@ func Install(p paths.Paths) error {
 	}
 	if err := sysreq.RequireCommand("tmux"); err != nil {
 		return errors.New("tmux is not installed; install it with your package manager, then try again")
-	}
-
-	if v, err := Version(); err == nil && v != ExpectedVersion {
-		ui.Warn("tmux version is %s, expected %s; continuing without modifying the binary", v, ExpectedVersion)
 	}
 
 	if err := fsx.EnsureSymlink(p.SourceTmux(), p.ConfigTmux); err != nil {
@@ -124,12 +116,4 @@ func ensureTPM(p paths.Paths) error {
 	}
 	ui.Info("Cloning TPM into %s", tpm)
 	return run.Stream("git", "clone", tpmURL, tpm)
-}
-
-func Version() (string, error) {
-	out, err := run.Output("tmux", "-V")
-	if err != nil {
-		return "", err
-	}
-	return strings.TrimPrefix(out, "tmux "), nil
 }
