@@ -3,6 +3,7 @@
   "requires": [
     { "bin": ["cargo"] },
     { "bin": ["rustc"] },
+    { "bin": ["c++", "g++"] },
     { "bin": ["pkg-config", "pkgconf"] },
     { "pc": "openssl" }
   ]
