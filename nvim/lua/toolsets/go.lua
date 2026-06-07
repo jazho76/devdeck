@@ -1,7 +1,10 @@
--- Host packages:
---
--- Fedora: go
--- Debian/Ubuntu: golang-go
+--[[devdeck
+{
+  "requires": [
+    { "bin": ["go"] }
+  ]
+}
+]]
 local go_adapter = function(callback, _)
   local port = 38697
   local handle

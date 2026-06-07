@@ -11,11 +11,15 @@ type Selection struct {
 	Cancelled bool
 }
 
-func MultiSelect(prompt string, items []string, selected map[string]bool, opts ...Option) (Selection, error) {
+func MultiSelect(prompt string, items []string, selected map[string]bool, labels map[string]string, opts ...Option) (Selection, error) {
 	options := make([]huh.Option[string], len(items))
 	values := make([]string, 0, len(items))
 	for i, item := range items {
-		options[i] = huh.NewOption(item, item).Selected(selected[item])
+		label := item
+		if l, ok := labels[item]; ok {
+			label = l
+		}
+		options[i] = huh.NewOption(label, item).Selected(selected[item])
 		if selected[item] {
 			values = append(values, item)
 		}

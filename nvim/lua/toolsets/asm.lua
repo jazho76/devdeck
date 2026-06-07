@@ -1,7 +1,13 @@
--- Host packages
---
--- Fedora: cargo rust openssl-devel pkgconf-pkg-config
--- Debian/Ubuntu: cargo rustc libssl-dev pkg-config
+--[[devdeck
+{
+  "requires": [
+    { "bin": ["cargo"] },
+    { "bin": ["rustc"] },
+    { "bin": ["pkg-config", "pkgconf"] },
+    { "pc": "openssl" }
+  ]
+}
+]]
 return {
   lsp = {
     asm_lsp = {},

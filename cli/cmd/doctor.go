@@ -22,15 +22,8 @@ var doctorCmd = &cobra.Command{
 		ui.Step("Checking devdeck installation")
 		results := doctor.Run(p)
 		for _, r := range results {
-			switch r.Severity {
-			case doctor.OK:
-				ui.StatusOK(r.Name, r.Detail)
-			case doctor.Warn:
-				ui.StatusWarn(r.Name, r.Detail)
-			case doctor.Fail:
-				ui.StatusFail(r.Name, r.Detail)
-			}
-			if r.Severity != doctor.OK && r.Hint != "" {
+			renderResult(r)
+			if !r.Heading && r.Severity != doctor.OK && r.Hint != "" {
 				ui.Hint(r.Hint)
 			}
 		}
@@ -42,6 +35,25 @@ var doctorCmd = &cobra.Command{
 		}
 		return nil
 	},
+}
+
+func renderResult(r doctor.Result) {
+	if r.Heading {
+		ui.StatusHeading(r.Name)
+		return
+	}
+	ok, warn, fail := ui.StatusOK, ui.StatusWarn, ui.StatusFail
+	if r.Indent {
+		ok, warn, fail = ui.StatusOKSub, ui.StatusWarnSub, ui.StatusFailSub
+	}
+	switch r.Severity {
+	case doctor.OK:
+		ok(r.Name, r.Detail)
+	case doctor.Warn:
+		warn(r.Name, r.Detail)
+	case doctor.Fail:
+		fail(r.Name, r.Detail)
+	}
 }
 
 func init() {

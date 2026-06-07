@@ -35,8 +35,26 @@ func StatusFail(label, detail string) {
 	printStatus(errorStyle, "✗", label, detail)
 }
 
+func StatusHeading(label string) {
+	fmt.Println(headingStyle.Render(label))
+}
+
+func Dim(s string) string {
+	return detailStyle.Render(s)
+}
+
+func StatusOKSub(label, detail string)   { printStatusIndented("    ", okStyle, "✓", label, detail) }
+func StatusWarnSub(label, detail string) { printStatusIndented("    ", warnStyle, "!", label, detail) }
+func StatusFailSub(label, detail string) {
+	printStatusIndented("    ", errorStyle, "✗", label, detail)
+}
+
 func printStatus(style lipgloss.Style, glyph, label, detail string) {
-	line := style.Render(glyph + " " + label)
+	printStatusIndented("", style, glyph, label, detail)
+}
+
+func printStatusIndented(indent string, style lipgloss.Style, glyph, label, detail string) {
+	line := indent + style.Render(glyph+" "+label)
 	if detail != "" {
 		line += "  " + detailStyle.Render(detail)
 	}

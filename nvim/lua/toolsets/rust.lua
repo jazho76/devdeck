@@ -1,7 +1,11 @@
--- Host packages:
---
--- Fedora: cargo rust
--- Debian/Ubuntu: cargo rustc
+--[[devdeck
+{
+  "requires": [
+    { "bin": ["cargo"] },
+    { "bin": ["rustc"] }
+  ]
+}
+]]
 return {
   lsp = {
     rust_analyzer = {},

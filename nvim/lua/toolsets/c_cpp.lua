@@ -1,7 +1,10 @@
--- Host packages:
---
--- Fedora: gcc gcc-c++ make
--- Debian/Ubuntu: gcc g++ make
+--[[devdeck
+{
+  "requires": [
+    { "bin": ["g++", "c++"] }
+  ]
+}
+]]
 return {
   treesitter = {
     'c',

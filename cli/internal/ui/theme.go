@@ -24,13 +24,14 @@ var (
 )
 
 var (
-	stepStyle   = lipgloss.NewStyle().Bold(true).Foreground(primaryColor)
-	infoStyle   = lipgloss.NewStyle()
-	warnStyle   = lipgloss.NewStyle().Foreground(warnColor)
-	errorStyle  = lipgloss.NewStyle().Foreground(errorColor)
-	okStyle     = lipgloss.NewStyle().Foreground(tokyoGreen)
-	detailStyle = lipgloss.NewStyle().Foreground(tokyoComment)
-	hintStyle   = lipgloss.NewStyle().Foreground(tokyoComment)
+	stepStyle    = lipgloss.NewStyle().Bold(true).Foreground(primaryColor)
+	infoStyle    = lipgloss.NewStyle()
+	warnStyle    = lipgloss.NewStyle().Foreground(warnColor)
+	errorStyle   = lipgloss.NewStyle().Foreground(errorColor)
+	okStyle      = lipgloss.NewStyle().Foreground(tokyoGreen)
+	detailStyle  = lipgloss.NewStyle().Foreground(tokyoComment)
+	hintStyle    = lipgloss.NewStyle().Foreground(tokyoComment)
+	headingStyle = lipgloss.NewStyle().Bold(true).Foreground(tokyoFg)
 )
 
 func formTheme() *huh.Theme { return tokyoNightTheme() }

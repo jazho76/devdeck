@@ -55,6 +55,7 @@ func configureToolsets(p paths.Paths, sel toolsetSelection) error {
 			return err
 		}
 		ui.Info("Enabled all toolsets")
+		reportToolsetReqs(p, available)
 		return nil
 	case sel.none:
 		if err := toolsets.Write(p, available, map[string]bool{}); err != nil {
@@ -71,6 +72,7 @@ func configureToolsets(p paths.Paths, sel toolsetSelection) error {
 			return err
 		}
 		ui.Info("Enabled toolsets: %s", strings.Join(sel.explicit, ", "))
+		reportToolsetReqs(p, sel.explicit)
 		return nil
 	}
 
@@ -84,7 +86,7 @@ func configureToolsets(p paths.Paths, sel toolsetSelection) error {
 		return err
 	}
 
-	result, err := ui.MultiSelect("Select toolsets to enable", available, enabled)
+	result, err := ui.MultiSelect("Select toolsets to enable", available, enabled, toolsetHints(p, available))
 	if err != nil {
 		return err
 	}
@@ -96,7 +98,61 @@ func configureToolsets(p paths.Paths, sel toolsetSelection) error {
 	if err := toolsets.Write(p, available, result.Selected); err != nil {
 		return err
 	}
+	reportToolsetReqs(p, selectedNames(available, result.Selected))
 	return nil
+}
+
+func toolsetHints(p paths.Paths, available []string) map[string]string {
+	width := 0
+	for _, name := range available {
+		if len(name) > width {
+			width = len(name)
+		}
+	}
+
+	labels := map[string]string{}
+	for _, name := range available {
+		hint, err := toolsets.Hint(p, name)
+		if err != nil || hint == "" {
+			continue
+		}
+		labels[name] = fmt.Sprintf("%-*s  %s", width, name, ui.Dim("requires: "+hint))
+	}
+	return labels
+}
+
+func selectedNames(available []string, selected map[string]bool) []string {
+	names := make([]string, 0, len(selected))
+	for _, name := range available {
+		if selected[name] {
+			names = append(names, name)
+		}
+	}
+	return names
+}
+
+func reportToolsetReqs(p paths.Paths, enabled []string) {
+	if len(enabled) == 0 {
+		return
+	}
+	groups, err := toolsets.Requirements(p, enabled)
+	if err != nil {
+		ui.Warn("could not check toolset requirements: %v", err)
+		return
+	}
+	seen := map[string]bool{}
+	for _, g := range groups {
+		for _, r := range g.Reqs {
+			if r.Found || seen[r.Label] {
+				continue
+			}
+			seen[r.Label] = true
+			ui.Warn("%s not found (required by %s toolset)", r.Label, g.Toolset)
+		}
+	}
+	if len(seen) == 0 {
+		ui.Info("Toolset requirements satisfied")
+	}
 }
 
 func validateToolsets(names, available []string) (map[string]bool, error) {

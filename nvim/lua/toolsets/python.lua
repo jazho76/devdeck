@@ -1,7 +1,11 @@
--- Host packages:
---
--- Fedora: python3 python3-pip
--- Debian/Ubuntu: python3 python3-pip
+--[[devdeck
+{
+  "requires": [
+    { "bin": ["python3"] },
+    { "bin": ["pip3", "pip"] }
+  ]
+}
+]]
 return {
   lsp = {
     pyright = {},

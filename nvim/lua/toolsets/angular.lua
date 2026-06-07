@@ -1,7 +1,11 @@
--- Host packages:
---
--- Fedora: nodejs npm
--- Debian/Ubuntu: nodejs npm
+--[[devdeck
+{
+  "requires": [
+    { "bin": ["node"] },
+    { "bin": ["npm"] }
+  ]
+}
+]]
 return {
   lsp = {
     angularls = {},

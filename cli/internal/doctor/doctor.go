@@ -11,6 +11,7 @@ import (
 	"github.com/jazho76/devdeck/cli/internal/run"
 	"github.com/jazho76/devdeck/cli/internal/source"
 	"github.com/jazho76/devdeck/cli/internal/sysreq"
+	"github.com/jazho76/devdeck/cli/internal/toolsets"
 )
 
 type Severity int
@@ -26,6 +27,8 @@ type Result struct {
 	Severity Severity
 	Detail   string
 	Hint     string
+	Indent   bool
+	Heading  bool
 }
 
 func Run(p paths.Paths) []Result {
@@ -48,12 +51,15 @@ func Run(p paths.Paths) []Result {
 	add(checkNvimVersion(bin, ok))
 	add(checkNvimSmoke(bin, ok))
 
-	add(checkToolsets(p))
-
 	for _, d := range sysreq.Catalog {
 		if !d.Required {
 			add(checkDep(d))
 		}
+	}
+
+	add(checkToolsets(p))
+	for _, r := range checkToolsetReqs(p) {
+		add(r)
 	}
 
 	return results
@@ -247,6 +253,32 @@ func checkToolsets(p paths.Paths) Result {
 	return r
 }
 
+func checkToolsetReqs(p paths.Paths) []Result {
+	names, err := toolsets.EnabledNames(p)
+	if err != nil {
+		return nil
+	}
+	groups, err := toolsets.Requirements(p, names)
+	if err != nil {
+		return []Result{{Severity: Warn, Name: "toolset requirements", Detail: err.Error()}}
+	}
+
+	var results []Result
+	for _, g := range groups {
+		results = append(results, Result{Heading: true, Name: g.Toolset + " toolset"})
+		for _, req := range g.Reqs {
+			r := Result{Name: req.Label, Detail: req.Detail, Indent: true}
+			if req.Found {
+				r.Severity = OK
+			} else {
+				r.Severity = Warn
+			}
+			results = append(results, r)
+		}
+	}
+	return results
+}
+
 func isExecutable(path string) bool {
 	info, err := os.Stat(path)
 	return err == nil && !info.IsDir() && info.Mode()&0o111 != 0
@@ -254,6 +286,9 @@ func isExecutable(path string) bool {
 
 func Summary(results []Result) (ok, warn, fail int) {
 	for _, r := range results {
+		if r.Heading {
+			continue
+		}
 		switch r.Severity {
 		case OK:
 			ok++

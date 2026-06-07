@@ -57,6 +57,10 @@ func Check(d Dep) (string, bool) {
 	return "", false
 }
 
+func HasPkgConfig(module string) bool {
+	return exec.Command("pkg-config", "--exists", module).Run() == nil
+}
+
 func Inspect(d Dep) Result {
 	path, found := Check(d)
 	if !found {
