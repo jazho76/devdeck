@@ -2,7 +2,8 @@
 {
   "requires": [
     { "bin": ["python3"] },
-    { "bin": ["pip3", "pip"] }
+    { "bin": ["node"] },
+    { "bin": ["npm"] }
   ]
 }
 ]]
