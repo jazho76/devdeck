@@ -3,6 +3,7 @@ package workspace
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -22,7 +23,6 @@ func capture() (version string, sessions []Session, err error) {
 		"#{pane_index}",
 		"#{?pane_active,1,0}",
 		"#{pane_current_path}",
-		"#{pane_current_command}",
 		"#{pane_pid}",
 		"#{window_zoomed_flag}",
 	}, sep)
@@ -46,7 +46,7 @@ func capture() (version string, sessions []Session, err error) {
 
 	for _, raw := range strings.Split(out, "\n") {
 		f := strings.Split(raw, sep)
-		if len(f) != 15 {
+		if len(f) != 14 {
 			return "", nil, fmt.Errorf("unexpected tmux output: %q", raw)
 		}
 		wi, err := strconv.Atoi(f[3])
@@ -85,17 +85,15 @@ func capture() (version string, sessions []Session, err error) {
 				Width:  ww,
 				Height: wh,
 				Layout: f[8],
-				Zoomed: f[14] == "1",
+				Zoomed: f[13] == "1",
 			})
 			wj = len(sessions[si].Windows) - 1
 			windowAt[wKey] = wj
 		}
 
 		var command []string
-		if f[12] == nvimCommand {
-			if shellPID, err := strconv.Atoi(f[13]); err == nil {
-				command = nvimArgs(shellPID)
-			}
+		if shellPID, err := strconv.Atoi(f[12]); err == nil {
+			command = paneCommand(shellPID)
 		}
 
 		sessions[si].Windows[wj].Panes = append(sessions[si].Windows[wj].Panes, Pane{
@@ -109,47 +107,31 @@ func capture() (version string, sessions []Session, err error) {
 	return version, sessions, nil
 }
 
-const nvimCommand = "nvim"
+func paneCommand(shellPID int) []string {
+	pids := childPIDs(shellPID)
+	candidates := make([][]string, 0, len(pids))
+	for _, pid := range pids {
+		if argv := procArgs(pid); len(argv) > 0 {
+			candidates = append(candidates, argv)
+		}
+	}
+	return selectCommand(candidates)
+}
 
-func nvimArgs(shellPID int) []string {
-	entries, err := os.ReadDir("/proc")
+func childPIDs(pid int) []int {
+	data, err := os.ReadFile(fmt.Sprintf("/proc/%d/task/%d/children", pid, pid))
 	if err != nil {
 		return nil
 	}
-	for _, entry := range entries {
-		pid, err := strconv.Atoi(entry.Name())
-		if err != nil {
-			continue
-		}
-		name, ppid, ok := procStatus(pid)
-		if !ok || name != nvimCommand || ppid != shellPID {
-			continue
-		}
-		return procArgs(pid)
-	}
-	return nil
-}
-
-func procStatus(pid int) (name string, ppid int, ok bool) {
-	data, err := os.ReadFile(fmt.Sprintf("/proc/%d/status", pid))
-	if err != nil {
-		return "", 0, false
-	}
-	var haveName, havePPID bool
-	for _, line := range strings.Split(string(data), "\n") {
-		switch {
-		case strings.HasPrefix(line, "Name:"):
-			name = strings.TrimSpace(strings.TrimPrefix(line, "Name:"))
-			haveName = true
-		case strings.HasPrefix(line, "PPid:"):
-			ppid, err = strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(line, "PPid:")))
-			havePPID = err == nil
-		}
-		if haveName && havePPID {
-			return name, ppid, true
+	fields := strings.Fields(string(data))
+	pids := make([]int, 0, len(fields))
+	for _, field := range fields {
+		if child, err := strconv.Atoi(field); err == nil {
+			pids = append(pids, child)
 		}
 	}
-	return "", 0, false
+	sort.Ints(pids)
+	return pids
 }
 
 func procArgs(pid int) []string {

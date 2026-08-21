@@ -169,7 +169,7 @@ func buildSession(temp string, s Session, baseIdx, paneBaseIdx int, home string)
 				continue
 			}
 			target := fmt.Sprintf("%s.%d", winTarget, paneBaseIdx+pi)
-			if err := tmuxRun("send-keys", "-t", target, shellQuote(pane.Command), "C-m"); err != nil {
+			if err := tmuxRun("send-keys", "-t", target, shellQuote(launchArgv(pane.Command)), "C-m"); err != nil {
 				return err
 			}
 		}
