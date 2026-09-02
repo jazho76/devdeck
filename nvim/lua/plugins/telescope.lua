@@ -89,6 +89,7 @@ return {
     vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = 'Search in open files' })
     vim.keymap.set('n', '<leader>st', require('telescope.builtin').builtin, { desc = 'Search Telescope builtins' })
     vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = 'Search files' })
+    vim.keymap.set('n', '<leader>ss', require('lib.workspace_symbols'), { desc = 'Search workspace symbols' })
     vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = 'Search help tags' })
     vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = 'Search current word' })
     vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = 'Search by grep' })
